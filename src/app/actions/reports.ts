@@ -22,7 +22,7 @@ export async function createReport(title: string) {
   return { success: true, report: data }
 }
 
-export async function updateReport(id: string, updates: { title?: string, content?: string, is_public?: boolean }) {
+export async function updateReport(id: string, updates: { title?: string, content?: string, is_public?: boolean, access_code?: string | null }) {
   const supabase = createClient()
   
   const { error } = await supabase
