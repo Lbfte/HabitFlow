@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { getReport, updateReport, deleteReport } from "@/app/actions/reports"
 import { Report } from "@/types/database"
 import { Button } from "@/components/ui/Button"
@@ -23,8 +23,9 @@ import {
 import ReactMarkdown from "react-markdown"
 import Link from "next/link"
 
-export default function ReportEditorPage() {
-  const { id } = useParams()
+function EditorContent() {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
   const router = useRouter()
   const [report, setReport] = useState<Report | null>(null)
   const [loading, setLoading] = useState(true)
@@ -33,7 +34,7 @@ export default function ReportEditorPage() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    fetchReport()
+    if (id) fetchReport()
   }, [id])
 
   const fetchReport = async () => {
@@ -71,7 +72,7 @@ export default function ReportEditorPage() {
   }
 
   const copyShareLink = () => {
-    const url = `${window.location.origin}/share/report/${id}`
+    const url = `${window.location.origin}/share/view?id=${id}`
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -147,7 +148,7 @@ export default function ReportEditorPage() {
                 {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
                 {copied ? 'Copiado!' : 'Copiar Link'}
               </Button>
-              <Link href={`/share/report/${id}`} target="_blank">
+              <Link href={`/share/view?id=${id}`} target="_blank">
                 <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-gray-500">
                   <ExternalLink className="w-3.5 h-3.5 mr-1" /> Ver Público
                 </Button>
@@ -172,5 +173,13 @@ export default function ReportEditorPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ReportEditorPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-indigo" /></div>}>
+      <EditorContent />
+    </Suspense>
   )
 }

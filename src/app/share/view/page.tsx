@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, notFound } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { getPublicReport } from "@/app/actions/reports"
 import ReactMarkdown from "react-markdown"
 import { Flame, Calendar, User, Loader2 } from "lucide-react"
@@ -10,15 +10,18 @@ import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 
-export default function PublicReportPage() {
-  const { id } = useParams()
+function ShareContent() {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
   const [report, setReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const data = await getPublicReport(id as string)
-      setReport(data)
+      if (id) {
+        const data = await getPublicReport(id as string)
+        setReport(data)
+      }
       setLoading(false)
     }
     load()
@@ -99,5 +102,13 @@ export default function PublicReportPage() {
         </footer>
       </main>
     </div>
+  )
+}
+
+export default function PublicReportPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo" /></div>}>
+      <ShareContent />
+    </Suspense>
   )
 }

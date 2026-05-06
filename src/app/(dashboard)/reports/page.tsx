@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Report } from "@/types/database"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { FileText, Plus, Search, MoreVertical, Globe, Lock, Loader2 } from "lucide-react"
+import { FileText, Plus, Globe, Lock, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -38,7 +38,7 @@ export default function ReportsPage() {
     setCreating(true)
     const result = await createReport("Novo Relatório")
     if (result.success && result.report) {
-      router.push(`/reports/${result.report.id}`)
+      router.push(`/reports/edit?id=${result.report.id}`)
     } else {
       setCreating(false)
     }
@@ -70,8 +70,8 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reports.map((report) => (
-          <Link key={report.id} href={`/reports/${report.id}`}>
-            <Card className="hover:ring-2 hover:ring-indigo/20 transition-all cursor-pointer group h-full">
+          <div key={report.id} className="h-full">
+            <Card className="hover:ring-2 hover:ring-indigo/20 transition-all group h-full flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="bg-indigo/5 p-2 rounded-lg group-hover:bg-indigo group-hover:text-white transition-colors">
@@ -87,20 +87,34 @@ export default function ReportsPage() {
                     </div>
                   )}
                 </div>
-                <CardTitle className="mt-4 group-hover:text-indigo transition-colors line-clamp-1">
-                  {report.title || "Sem título"}
-                </CardTitle>
+                <div className="mt-4">
+                  <CardTitle className="group-hover:text-indigo transition-colors line-clamp-1">
+                    {report.title || "Sem título"}
+                  </CardTitle>
+                </div>
                 <CardDescription className="text-xs">
                   {format(new Date(report.created_at), "d 'de' MMMM, yyyy", { locale: ptBR })}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">
+              <CardContent className="flex flex-col flex-1">
+                <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed flex-1">
                   {report.content || "Nenhum conteúdo ainda..."}
                 </p>
+                <div className="mt-6 flex gap-2">
+                  <Link href={`/reports/edit?id=${report.id}`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full">Editar</Button>
+                  </Link>
+                  {report.is_public && (
+                    <Link href={`/share/view?id=${report.id}`} target="_blank">
+                      <Button variant="ghost" size="sm">
+                        <Globe className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </CardContent>
             </Card>
-          </Link>
+          </div>
         ))}
 
         {reports.length === 0 && (
