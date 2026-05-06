@@ -1,10 +1,7 @@
-"use server"
-
-import { createClient } from "@/utils/supabase/server"
-import { revalidatePath } from "next/cache"
+import { createClient } from "@/utils/supabase/client"
 
 export async function createReport(title: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "Usuário não autenticado" }
@@ -22,12 +19,11 @@ export async function createReport(title: string) {
 
   if (error) return { error: error.message }
   
-  revalidatePath('/reports')
   return { success: true, report: data }
 }
 
 export async function updateReport(id: string, updates: { title?: string, content?: string, is_public?: boolean }) {
-  const supabase = await createClient()
+  const supabase = createClient()
   
   const { error } = await supabase
     .from('reports')
@@ -36,13 +32,11 @@ export async function updateReport(id: string, updates: { title?: string, conten
 
   if (error) return { error: error.message }
   
-  revalidatePath(`/reports/${id}`)
-  revalidatePath('/reports')
   return { success: true }
 }
 
 export async function deleteReport(id: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
   
   const { error } = await supabase
     .from('reports')
@@ -51,12 +45,11 @@ export async function deleteReport(id: string) {
 
   if (error) return { error: error.message }
   
-  revalidatePath('/reports')
   return { success: true }
 }
 
 export async function getReport(id: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('reports')
@@ -69,11 +62,11 @@ export async function getReport(id: string) {
 }
 
 export async function getPublicReport(id: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
   
   const { data, error } = await supabase
     .from('reports')
-    .select('*, user:user_id(id)') // In a real app, you might want user profile info
+    .select('*, user:user_id(id)')
     .eq('id', id)
     .eq('is_public', true)
     .single()

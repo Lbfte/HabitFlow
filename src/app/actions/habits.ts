@@ -1,10 +1,8 @@
-"use server"
-
-import { createClient } from "@/utils/supabase/server"
+import { createClient } from "@/utils/supabase/client"
 import { differenceInDays, parseISO, isToday } from "date-fns"
 
 export async function completeHabit(habitId: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
   
   const { data: habit, error: fetchError } = await supabase
     .from('habits')
@@ -29,11 +27,9 @@ export async function completeHabit(habitId: string) {
   } else {
     const diff = differenceInDays(new Date(), lastCompleted)
     
-    // Se a diferença for menor ou igual ao intervalo esperado, a sequência continua
     if (diff <= interval) {
       newStreak += 1
     } else {
-      // Se passou do intervalo (ex: era pra fzr a cada 2 dias, mas fez dps de 3), reseta
       newStreak = 1
     }
   }
@@ -54,7 +50,7 @@ export async function completeHabit(habitId: string) {
 }
 
 export async function createHabit(name: string, goalDescription: string, frequencyInterval: number = 1) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "Usuário não autenticado" }
@@ -73,15 +69,4 @@ export async function createHabit(name: string, goalDescription: string, frequen
 
   if (error) return { error: error.message }
   return { success: true, habit: data }
-}
-
-export async function getHabits() {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('habits')
-    .select('*')
-    .order('created_at', { ascending: true })
-
-  if (error) return []
-  return data
 }

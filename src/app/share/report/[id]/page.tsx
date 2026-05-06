@@ -1,26 +1,52 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useParams, notFound } from "next/navigation"
 import { getPublicReport } from "@/app/actions/reports"
-import { notFound } from "next/navigation"
 import ReactMarkdown from "react-markdown"
-import { Flame, Calendar, User } from "lucide-react"
+import { Flame, Calendar, User, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 
-export default async function PublicReportPage({ params }: { params: { id: string } }) {
-  const { id } = await params
-  const report = await getPublicReport(id)
+export default function PublicReportPage() {
+  const { id } = useParams()
+  const [report, setReport] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const data = await getPublicReport(id as string)
+      setReport(data)
+      setLoading(false)
+    }
+    load()
+  }, [id])
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="w-8 h-8 text-indigo animate-spin" />
+    </div>
+  )
 
   if (!report) {
-    notFound()
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900">Relatório não encontrado</h1>
+        <p className="text-gray-500">Este relatório pode não existir ou não estar marcado como público.</p>
+        <Link href="/">
+          <Button>Voltar para o Início</Button>
+        </Link>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] selection:bg-indigo/10 selection:text-indigo">
-      {/* Mini Header */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-indigo">
-          <div className="bg-indigo p-1 rounded-lg">
+          <div className="bg-indigo p-1.5 rounded-lg">
             <Flame className="w-4 h-4 text-white" />
           </div>
           <span>HabitFlow</span>
@@ -32,7 +58,6 @@ export default async function PublicReportPage({ params }: { params: { id: strin
 
       <main className="max-w-3xl mx-auto px-6 py-16 md:py-24">
         <article className="space-y-12">
-          {/* Metadata */}
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
               {report.title || "Relatório sem título"}
@@ -54,7 +79,6 @@ export default async function PublicReportPage({ params }: { params: { id: strin
 
           <div className="h-px bg-gray-100 w-full" />
 
-          {/* Content */}
           <div className="prose prose-lg prose-indigo max-w-none prose-headings:font-bold prose-p:leading-relaxed prose-p:text-gray-700">
             <ReactMarkdown>{report.content || "*Este relatório não possui conteúdo.*"}</ReactMarkdown>
           </div>
