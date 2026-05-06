@@ -1,65 +1,97 @@
-import Image from "next/image";
+import Link from "next/link"
+import { Button } from "@/components/ui/Button"
+import { Layout, Flame, CheckSquare, FileText, Calendar, ArrowRight } from "lucide-react"
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col min-h-screen">
+      <header className="px-6 py-4 flex items-center justify-between border-b border-gray-50 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2 font-bold text-xl text-indigo">
+          <div className="bg-indigo p-1.5 rounded-lg">
+            <Flame className="w-5 h-5 text-white" />
+          </div>
+          <span>HabitFlow</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="/login">
+            <Button variant="ghost" size="sm">Entrar</Button>
+          </Link>
+          <Link href="/register">
+            <Button size="sm">Começar Agora</Button>
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="px-6 py-24 md:py-32 max-w-5xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo/5 border border-indigo/10 text-indigo text-sm font-medium animate-bounce">
+            <Flame className="w-4 h-4" />
+            Vença a resistência cerebral
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground">
+            Pequenos Hábitos,<br />
+            <span className="text-indigo">Grandes Resultados.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+            Uma plataforma minimalista baseada na ciência para transformar sua rotina através de micro-metas diárias.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link href="/register" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full gap-2">
+                Começar gratuitamente <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button variant="secondary" size="lg" className="w-full">
+                Ver demonstração
+              </Button>
+            </Link>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="bg-white py-24 border-y border-gray-50">
+          <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <FeatureCard 
+              icon={Flame} 
+              title="Micro-Hábitos" 
+              description="Metas ridiculamente pequenas para vencer a procrastinação."
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <FeatureCard 
+              icon={CheckSquare} 
+              title="Gestão de Tarefas" 
+              description="Organize seu dia com checklists simples e eficazes."
+            />
+            <FeatureCard 
+              icon={FileText} 
+              title="Relatórios" 
+              description="Escreva e compartilhe seus progressos em Markdown."
+            />
+            <FeatureCard 
+              icon={Calendar} 
+              title="Calendário" 
+              description="Visualize sua jornada e planeje seu tempo com precisão."
+            />
+          </div>
+        </section>
       </main>
+
+      <footer className="py-12 border-t border-gray-50 text-center text-gray-400 text-sm">
+        <p>© 2026 HabitFlow. Feito para quem valoriza o progresso constante.</p>
+      </footer>
     </div>
-  );
+  )
+}
+
+function FeatureCard({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
+  return (
+    <div className="p-6 rounded-2xl border border-gray-100 hover:border-indigo/20 hover:shadow-xl hover:shadow-indigo/5 transition-all group">
+      <div className="bg-indigo/5 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo group-hover:text-white transition-colors">
+        <Icon className="w-6 h-6 text-indigo group-hover:text-white" />
+      </div>
+      <h3 className="font-bold text-lg mb-2">{title}</h3>
+      <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+    </div>
+  )
 }
