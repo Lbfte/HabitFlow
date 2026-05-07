@@ -108,7 +108,7 @@ export default function TasksPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <Loader2 className="w-8 h-8 text-indigo animate-spin" />
-      <p className="text-gray-500 animate-pulse">Organizando sua lista...</p>
+      <p className="text-muted animate-pulse">Organizando sua lista...</p>
     </div>
   )
 
@@ -117,24 +117,24 @@ export default function TasksPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
-          <p className="text-gray-500">Mantenha o foco no que realmente importa hoje.</p>
+          <p className="text-muted">Mantenha o foco no que realmente importa hoje.</p>
         </div>
-        <div className="bg-indigo/5 px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo">
+        <div className="bg-indigo/10 px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo">
           <Calendar className="w-4 h-4" />
-          <span className="text-sm font-bold uppercase tracking-wider">
+          <span className="text-[10px] font-black uppercase tracking-widest">
             {format(new Date(), "d 'de' MMMM", { locale: ptBR })}
           </span>
         </div>
       </header>
 
-      <Card className="border-none shadow-xl shadow-indigo/5 ring-1 ring-gray-100 overflow-hidden">
+      <Card className="border-none shadow-xl shadow-indigo/5 ring-1 ring-border bg-surface overflow-hidden">
         <CardContent className="p-0">
-          <form onSubmit={handleAddTask} className="p-6 border-b border-gray-50 flex gap-4 bg-gray-50/30">
+          <form onSubmit={handleAddTask} className="p-6 border-b border-border flex gap-4 bg-muted/5">
             <Input 
               placeholder="Adicionar uma nova tarefa..." 
               value={newTaskTitle}
               onChange={e => setNewTaskTitle(e.target.value)}
-              className="bg-white border-gray-200"
+              className="bg-surface border-border flex-1"
             />
             <Button type="submit" disabled={adding || !newTaskTitle.trim()}>
               {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
@@ -142,11 +142,14 @@ export default function TasksPage() {
             </Button>
           </form>
 
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-border">
             {tasks.map((task) => (
               <div 
                 key={task.id}
-                className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors group"
+                className={cn(
+                  "flex items-center justify-between p-6 hover:bg-indigo/[0.02] transition-colors group",
+                  task.is_completed && "opacity-40 grayscale-[0.5]"
+                )}
               >
                 <div className="flex items-center gap-4 flex-1">
                   <button 
@@ -157,7 +160,7 @@ export default function TasksPage() {
                     {task.is_completed ? (
                       <CheckCircle2 className="w-6 h-6 text-green" />
                     ) : (
-                      <Circle className="w-6 h-6 text-gray-200 group-hover:text-indigo/40" />
+                      <Circle className="w-6 h-6 text-border group-hover:text-indigo/40" />
                     )}
                   </button>
                   
@@ -168,12 +171,12 @@ export default function TasksPage() {
                         onChange={e => setEditingTitle(e.target.value)}
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && saveEdit(task.id)}
-                        className="h-9"
+                        className="h-10"
                       />
-                      <Button size="sm" onClick={() => saveEdit(task.id)} className="h-9 w-9 p-0">
+                      <Button size="sm" onClick={() => saveEdit(task.id)} className="h-10 w-10 p-0">
                         <Save className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-9 w-9 p-0">
+                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-10 w-10 p-0">
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
@@ -181,8 +184,8 @@ export default function TasksPage() {
                     <span 
                       onClick={() => !task.is_completed && startEditing(task)}
                       className={cn(
-                        "text-lg font-medium transition-all flex-1 cursor-text",
-                        task.is_completed ? "text-gray-400 line-through" : "text-gray-700 hover:text-indigo"
+                        "text-lg font-bold transition-all flex-1 cursor-text",
+                        task.is_completed ? "text-muted line-through" : "text-foreground hover:text-indigo"
                       )}
                     >
                       {task.title}
@@ -194,13 +197,13 @@ export default function TasksPage() {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => startEditing(task)}
-                      className="p-2 text-gray-400 hover:text-indigo hover:bg-indigo/5 rounded-lg transition-all"
+                      className="p-2 text-muted hover:text-indigo hover:bg-indigo/10 rounded-lg transition-all"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDeleteTask(task.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      className="p-2 text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -208,34 +211,22 @@ export default function TasksPage() {
                 )}
               </div>
             ))}
-
-            {tasks.length === 0 && (
-              <div className="text-center py-20">
-                <div className="bg-indigo/5 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-indigo/20" />
-                </div>
-                <h3 className="font-bold text-gray-900">Tudo limpo por aqui!</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  Você não tem tarefas pendentes. Que tal planejar o resto do seu dia?
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
 
-      <section className="bg-surface rounded-3xl p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+      <section className="bg-surface rounded-3xl p-8 ring-1 ring-border shadow-sm relative overflow-hidden">
         <div className="relative z-10">
-          <h3 className="font-bold text-lg mb-2">Resumo da Produtividade</h3>
+          <h3 className="font-black text-xl mb-2 tracking-tight">Produtividade</h3>
           <div className="flex gap-8 mt-4">
             <div>
-              <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Pendentes</p>
-              <p className="text-2xl font-black text-gray-700">{tasks.filter(t => !t.is_completed).length}</p>
+              <p className="text-[10px] uppercase font-black text-muted tracking-widest">Pendentes</p>
+              <p className="text-3xl font-black text-foreground">{tasks.filter(t => !t.is_completed).length}</p>
             </div>
-            <div className="h-10 w-px bg-gray-100" />
+            <div className="h-12 w-px bg-border" />
             <div>
-              <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Concluídas</p>
-              <p className="text-2xl font-black text-green">{tasks.filter(t => t.is_completed).length}</p>
+              <p className="text-[10px] uppercase font-black text-muted tracking-widest">Concluídas</p>
+              <p className="text-3xl font-black text-green">{tasks.filter(t => t.is_completed).length}</p>
             </div>
           </div>
         </div>

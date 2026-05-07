@@ -11,6 +11,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { createReport } from "@/app/actions/reports"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([])
@@ -51,7 +52,7 @@ export default function ReportsPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <Loader2 className="w-8 h-8 text-indigo animate-spin" />
-      <p className="text-gray-500 animate-pulse">Carregando seus relatórios...</p>
+      <p className="text-muted animate-pulse">Carregando seus relatórios...</p>
     </div>
   )
 
@@ -60,7 +61,7 @@ export default function ReportsPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
-          <p className="text-gray-500">Documente sua jornada e compartilhe insights.</p>
+          <p className="text-muted">Documente sua jornada e compartilhe insights.</p>
         </div>
         <Button onClick={handleCreateReport} disabled={creating}>
           {creating ? (
@@ -75,33 +76,33 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reports.map((report) => (
           <div key={report.id} className="h-full">
-            <Card className="hover:ring-2 hover:ring-indigo/20 transition-all group h-full flex flex-col">
+            <Card className="hover:ring-2 hover:ring-indigo/40 transition-all group h-full flex flex-col bg-surface border-none ring-1 ring-border shadow-xl shadow-indigo/5">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="bg-indigo/5 p-2 rounded-lg group-hover:bg-indigo group-hover:text-white transition-colors">
+                  <div className="bg-indigo/10 p-2 rounded-lg group-hover:bg-indigo group-hover:text-white transition-colors">
                     <FileText className="w-5 h-5 text-indigo group-hover:text-white" />
                   </div>
                   {report.is_public ? (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-green uppercase tracking-wider bg-green/5 px-2 py-1 rounded-full">
+                    <div className="flex items-center gap-1 text-[10px] font-black text-green uppercase tracking-widest bg-green/10 px-2 py-1 rounded-full">
                       <Globe className="w-3 h-3" /> Público
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 px-2 py-1 rounded-full">
+                    <div className="flex items-center gap-1 text-[10px] font-black text-muted uppercase tracking-widest bg-muted/10 px-2 py-1 rounded-full">
                       <Lock className="w-3 h-3" /> Privado
                     </div>
                   )}
                 </div>
                 <div className="mt-4">
-                  <CardTitle className="group-hover:text-indigo transition-colors line-clamp-1">
+                  <CardTitle className="group-hover:text-indigo transition-colors line-clamp-1 font-bold">
                     {report.title || "Sem título"}
                   </CardTitle>
                 </div>
-                <CardDescription className="text-xs">
+                <CardDescription className="text-xs font-medium text-muted">
                   {format(new Date(report.created_at), "d 'de' MMMM, yyyy", { locale: ptBR })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col flex-1">
-                <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed flex-1">
+                <p className="text-sm text-muted line-clamp-3 leading-relaxed flex-1 font-medium">
                   {report.content || "Nenhum conteúdo ainda..."}
                 </p>
                 <div className="mt-6 flex gap-2">
@@ -109,7 +110,7 @@ export default function ReportsPage() {
                     <Button variant="outline" size="sm" className="w-full">Editar</Button>
                   </Link>
                   {report.is_public && (
-                    <Link href={`/share/view?id=${report.id}`} target="_blank">
+                    <Link href={`/share/view/?id=${report.id}`} target="_blank">
                       <Button variant="ghost" size="sm">
                         <Globe className="w-4 h-4" />
                       </Button>
@@ -122,12 +123,12 @@ export default function ReportsPage() {
         ))}
 
         {reports.length === 0 && (
-          <div className="col-span-full text-center py-24 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-100">
-            <div className="bg-white w-20 h-20 rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6">
-              <FileText className="w-10 h-10 text-gray-200" />
+          <div className="col-span-full text-center py-24 bg-surface rounded-3xl border-2 border-dashed border-border">
+            <div className="bg-indigo/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-10 h-10 text-muted" />
             </div>
-            <h3 className="font-bold text-xl text-gray-900">Comece a escrever</h3>
-            <p className="text-gray-500 mt-2 max-w-sm mx-auto">
+            <h3 className="font-bold text-xl text-foreground">Comece a escrever</h3>
+            <p className="text-muted mt-2 max-w-sm mx-auto font-medium">
               Relatórios são ótimos para refletir sobre seu progresso e manter um histórico da sua evolução.
             </p>
             <Button className="mt-8" onClick={handleCreateReport}>

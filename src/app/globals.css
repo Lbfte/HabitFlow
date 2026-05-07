@@ -5,8 +5,9 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --color-indigo: #6366F1;
-  --color-green: #10B981;
+  --color-indigo: var(--indigo);
+  --color-green: var(--green);
+  --color-orange: #FF922B;
   --font-sans: "Inter", "Geist", sans-serif;
 }
 
@@ -16,14 +17,18 @@
   --surface: #FFFFFF;
   --border: #E5E7EB;
   --muted: #64748B;
+  --indigo: #4F46E5;
+  --green: #10B981;
 }
 
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --surface: #1E293B;
-  --border: #334155;
-  --muted: #94A3B8;
+  --background: #121214;
+  --foreground: #E9ECEF;
+  --surface: #1A1B1E;
+  --border: rgba(123, 97, 255, 0.1);
+  --muted: #ADB5BD;
+  --indigo: #7B61FF;
+  --green: #40C057;
 }
 
 body {
@@ -41,7 +46,18 @@ body {
   }
 }
 
-/* Custom Scrollbar for Dark Mode */
+/* Utilitários de Opacidade para Concluídos */
+.completed-item {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+  transition: all 0.3s ease;
+}
+
+/* Gradiente Premium para o Accent */
+.accent-gradient {
+  background: linear-gradient(135deg, #7B61FF 0%, #634ACC 100%);
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

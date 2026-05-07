@@ -20,7 +20,7 @@ import {
 import { ptBR } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus, Clock, Loader2, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { Card, CardContent } from "@/components/ui/Card"
+import { Card } from "@/components/ui/Card"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { CalendarEvent } from "@/types/database"
@@ -88,7 +88,6 @@ export default function CalendarPage() {
     }
   }
 
-  // Monthly Grid Calculation
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(monthStart)
   const startDate = startOfWeek(monthStart, { weekStartsOn: 0 })
@@ -99,8 +98,8 @@ export default function CalendarPage() {
 
   const categories = {
     trabalho: "bg-indigo/10 text-indigo border-indigo/20",
-    estudo: "bg-amber-50 text-amber-600 border-amber-100",
-    pessoal: "bg-green/5 text-green border-green/20"
+    estudo: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    pessoal: "bg-green/10 text-green border-green/20"
   }
 
   return (
@@ -112,16 +111,16 @@ export default function CalendarPage() {
               ? format(selectedDate, "d 'de' MMMM yyyy", { locale: ptBR })
               : format(currentDate, "MMMM yyyy", { locale: ptBR })}
           </h1>
-          <p className="text-gray-500">Gerencie seu cronograma e compromissos.</p>
+          <p className="text-muted">Gerencie seu cronograma e compromissos.</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
+          <div className="flex bg-surface p-1 rounded-lg mr-2 ring-1 ring-border shadow-sm">
             <button 
               onClick={() => setView('month')}
               className={cn(
                 "px-3 py-1.5 rounded-md text-xs font-bold transition-all",
-                view === 'month' ? "bg-white shadow-sm text-indigo" : "text-gray-500 hover:text-gray-700"
+                view === 'month' ? "bg-indigo text-white shadow-sm" : "text-muted hover:text-foreground"
               )}
             >
               Mês
@@ -130,7 +129,7 @@ export default function CalendarPage() {
               onClick={() => setView('day')}
               className={cn(
                 "px-3 py-1.5 rounded-md text-xs font-bold transition-all",
-                view === 'day' ? "bg-white shadow-sm text-indigo" : "text-gray-500 hover:text-gray-700"
+                view === 'day' ? "bg-indigo text-white shadow-sm" : "text-muted hover:text-foreground"
               )}
             >
               Dia
@@ -152,12 +151,12 @@ export default function CalendarPage() {
       </header>
 
       {view === 'month' ? (
-        <Card className="border-none shadow-xl shadow-indigo/5 ring-1 ring-gray-100 overflow-hidden">
+        <Card className="border-none shadow-xl shadow-indigo/5 bg-surface ring-1 ring-border overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
-              <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+              <div className="grid grid-cols-7 border-b border-border bg-muted/5">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  <div key={day} className="py-3 text-center text-[10px] font-black text-muted uppercase tracking-widest">
                     {day}
                   </div>
                 ))}
@@ -176,15 +175,15 @@ export default function CalendarPage() {
                     setView('day')
                   }}
                   className={cn(
-                    "min-h-[120px] p-2 border-r border-b border-gray-50 transition-all cursor-pointer hover:bg-gray-50/50",
-                    !isCurrentMonth && "bg-gray-50/30 text-gray-300",
-                    isSelected && "ring-2 ring-inset ring-indigo/20 bg-indigo/[0.02]"
+                    "min-h-[120px] p-2 border-r border-b border-border transition-all cursor-pointer hover:bg-indigo/[0.02]",
+                    !isCurrentMonth && "opacity-20",
+                    isSelected && "bg-indigo/[0.03]"
                   )}
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className={cn(
-                      "text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full",
-                      isToday(day) ? "bg-indigo text-white" : "text-gray-700"
+                      "text-xs font-black w-7 h-7 flex items-center justify-center rounded-full transition-all",
+                      isToday(day) ? "bg-indigo text-white shadow-lg shadow-indigo/20" : "text-foreground"
                     )}>
                       {format(day, 'd')}
                     </span>
@@ -199,7 +198,7 @@ export default function CalendarPage() {
                           setIsModalOpen(true);
                         }}
                         className={cn(
-                          "text-[10px] px-1.5 py-0.5 rounded border font-bold truncate hover:opacity-80 transition-opacity",
+                          "text-[9px] px-1.5 py-0.5 rounded border font-black truncate hover:opacity-80 transition-opacity uppercase tracking-tighter",
                           categories[event.category as keyof typeof categories] || categories.pessoal
                         )}
                       >
@@ -207,7 +206,7 @@ export default function CalendarPage() {
                       </div>
                     ))}
                     {dayEvs.length > 3 && (
-                      <div className="text-[10px] text-gray-400 font-bold px-1.5">
+                      <div className="text-[9px] text-muted font-black px-1.5 uppercase">
                         + {dayEvs.length - 3} mais
                       </div>
                     )}
@@ -221,7 +220,7 @@ export default function CalendarPage() {
     </Card>
   ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2 border-none shadow-xl shadow-indigo/5 ring-1 ring-gray-100 p-6">
+          <Card className="lg:col-span-2 border-none shadow-xl shadow-indigo/5 bg-surface ring-1 ring-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-lg flex items-center gap-2">
                 <Clock className="w-5 h-5 text-indigo" />
@@ -230,8 +229,8 @@ export default function CalendarPage() {
             </div>
             <div className="relative space-y-0">
               {Array.from({ length: 24 }).map((_, hour) => (
-                <div key={hour} className="flex border-t border-gray-50 h-16 group relative">
-                  <div className="w-16 -mt-3 pr-4 text-right text-[10px] font-bold text-gray-300 group-hover:text-gray-500 transition-colors">
+                <div key={hour} className="flex border-t border-border h-16 group relative">
+                  <div className="w-16 -mt-3 pr-4 text-right text-[10px] font-black text-muted group-hover:text-foreground transition-colors">
                     {format(new Date().setHours(hour, 0), 'HH:mm')}
                   </div>
                   <div className="flex-1 relative">
@@ -242,14 +241,14 @@ export default function CalendarPage() {
                       <div 
                         key={event.id}
                         className={cn(
-                          "absolute inset-x-2 top-1 rounded-lg border p-3 z-10 shadow-sm animate-in zoom-in-95 duration-200",
+                          "absolute inset-x-2 top-1 rounded-xl border p-3 z-10 shadow-lg animate-in zoom-in-95 duration-200",
                           categories[event.category as keyof typeof categories]
                         )}
                       >
                         <div className="flex justify-between items-start">
                           <div className="cursor-pointer flex-1" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}>
-                            <p className="font-bold text-sm">{event.title}</p>
-                            <p className="text-[10px] opacity-70">
+                            <p className="font-black text-sm uppercase tracking-tight">{event.title}</p>
+                            <p className="text-[10px] font-bold opacity-70">
                               {format(parseISO(event.start_time), 'HH:mm')} - {format(parseISO(event.end_time), 'HH:mm')}
                             </p>
                           </div>
@@ -271,13 +270,13 @@ export default function CalendarPage() {
           </Card>
 
           <div className="space-y-6">
-             <Card className="border-none shadow-xl shadow-indigo/5 ring-1 ring-gray-100 p-6">
-               <h3 className="font-bold text-sm uppercase tracking-widest text-gray-400 mb-4">Legenda</h3>
+             <Card className="border-none shadow-xl shadow-indigo/5 bg-surface ring-1 ring-border p-6">
+               <h3 className="font-black text-[10px] uppercase tracking-widest text-muted mb-4">Legenda</h3>
                <div className="space-y-3">
                  {Object.entries(categories).map(([cat, style]) => (
                    <div key={cat} className="flex items-center gap-3">
                      <div className={cn("w-3 h-3 rounded-full border", style.split(' ')[0], style.split(' ')[2])} />
-                     <span className="text-sm font-medium capitalize text-gray-600">{cat}</span>
+                     <span className="text-sm font-bold capitalize text-foreground">{cat}</span>
                    </div>
                  ))}
                </div>
