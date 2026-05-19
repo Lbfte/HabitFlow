@@ -21,7 +21,15 @@ export default function HabitsPage() {
 
   useEffect(() => {
     fetchHabits()
+    const savedHideHabits = localStorage.getItem('hideHabits')
+    if (savedHideHabits) setHideHabits(savedHideHabits === 'true')
   }, [])
+
+  const toggleHideHabits = () => {
+    const next = !hideHabits
+    setHideHabits(next)
+    localStorage.setItem('hideHabits', String(next))
+  }
 
   const fetchHabits = async () => {
     setLoading(true)
@@ -81,7 +89,7 @@ export default function HabitsPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">Micro-Hábitos</h1>
             <button 
-              onClick={() => setHideHabits(!hideHabits)} 
+              onClick={toggleHideHabits} 
               className="mt-1 text-muted hover:text-foreground transition-colors"
               title={hideHabits ? "Mostrar hábitos" : "Ocultar hábitos"}
             >

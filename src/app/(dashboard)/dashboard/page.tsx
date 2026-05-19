@@ -27,7 +27,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
+    const savedHideHabits = localStorage.getItem('hideHabits')
+    if (savedHideHabits) setHideHabits(savedHideHabits === 'true')
   }, [])
+
+  const toggleHideHabits = () => {
+    const next = !hideHabits
+    setHideHabits(next)
+    localStorage.setItem('hideHabits', String(next))
+  }
 
   const fetchData = async () => {
     setLoading(true)
@@ -161,7 +169,7 @@ export default function DashboardPage() {
               <Flame className="w-5 h-5 text-indigo" />
               Micro-Hábitos
               <button 
-                onClick={() => setHideHabits(!hideHabits)} 
+                onClick={toggleHideHabits} 
                 className="ml-2 text-muted hover:text-foreground transition-colors"
                 title={hideHabits ? "Mostrar hábitos" : "Ocultar hábitos"}
               >

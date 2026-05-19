@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/client"
 
-export async function createEvent(title: string, startTime: string, endTime: string, category: 'trabalho' | 'estudo' | 'pessoal') {
+export async function createEvent(title: string, startTime: string, endTime: string, category: string) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

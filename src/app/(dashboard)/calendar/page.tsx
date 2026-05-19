@@ -35,7 +35,13 @@ export default function CalendarPage() {
   const [view, setView] = useState<'month' | 'day'>('month')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [customCategories, setCustomCategories] = useState<Record<string, string>>({})
   const supabase = createClient()
+
+  useEffect(() => {
+    const saved = localStorage.getItem('calendar_categories')
+    if (saved) setCustomCategories(JSON.parse(saved))
+  }, [])
 
   useEffect(() => {
     fetchEvents()
@@ -96,11 +102,13 @@ export default function CalendarPage() {
 
   const dayEvents = (day: Date) => events.filter(e => isSameDay(parseISO(e.start_time), day))
 
-  const categories = {
+  const defaultCategories = {
     trabalho: "bg-indigo/10 text-indigo border-indigo/20",
     estudo: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     pessoal: "bg-green/10 text-green border-green/20"
   }
+  
+  const categories = { ...defaultCategories, ...customCategories }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
@@ -290,6 +298,12 @@ export default function CalendarPage() {
         onClose={() => { setIsModalOpen(false); setEditingEvent(null); }} 
         onSave={fetchEvents}
         selectedDate={selectedDate}
+        categories={categories}
+        onAddCategory={(cat, color) => {
+          const newCats = { ...customCategories, [cat]: color }
+          setCustomCategories(newCats)
+          localStorage.setItem('calendar_categories', JSON.stringify(newCats))
+        }}
         initialData={editingEvent ? {
           id: editingEvent.id,
           title: editingEvent.title,

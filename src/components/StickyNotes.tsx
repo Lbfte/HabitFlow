@@ -68,6 +68,14 @@ export function StickyNotes() {
       .eq('id', id)
   }
 
+  const updateNoteColor = async (id: string, color: string) => {
+    setNotes(notes.map(n => n.id === id ? { ...n, color } : n))
+    await supabase
+      .from('notes')
+      .update({ color })
+      .eq('id', id)
+  }
+
   const deleteNote = async (id: string) => {
     setNotes(notes.filter(n => n.id !== id))
     await supabase.from('notes').delete().eq('id', id)
@@ -103,9 +111,23 @@ export function StickyNotes() {
               note.color
             )}
           >
+            <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {COLORS.map(c => (
+                <button 
+                  key={c}
+                  onClick={() => updateNoteColor(note.id, c)}
+                  className={cn(
+                    "w-4 h-4 rounded-full border border-black/10 transition-transform hover:scale-110", 
+                    c.split(' ')[0],
+                    note.color === c && "ring-2 ring-indigo ring-offset-1"
+                  )}
+                  title="Trocar cor"
+                />
+              ))}
+            </div>
             <button 
               onClick={() => deleteNote(note.id)}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10 hover:bg-red-600 hover:scale-110"
             >
               <X className="w-3 h-3" />
             </button>
@@ -113,7 +135,7 @@ export function StickyNotes() {
               value={note.content}
               onChange={(e) => updateNote(note.id, e.target.value)}
               placeholder="Escreva algo..."
-              className="w-full h-32 bg-transparent border-none outline-none resize-none placeholder:text-current placeholder:opacity-50 font-medium text-sm custom-scrollbar"
+              className="w-full h-32 bg-transparent border-none outline-none resize-none placeholder:text-current placeholder:opacity-50 font-medium text-sm custom-scrollbar !text-current pt-4"
               style={{ lineHeight: "1.6" }}
             />
           </div>
