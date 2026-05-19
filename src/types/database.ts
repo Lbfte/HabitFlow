@@ -36,7 +36,7 @@ export type CalendarEvent = {
   title: string
   start_time: string
   end_time: string
-  category: 'trabalho' | 'estudo' | 'pessoal'
+  category: string
   created_at: string
 }
 
