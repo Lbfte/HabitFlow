@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Habit, DailyTask } from "@/types/database"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2 } from "lucide-react"
+import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2, Palette } from "lucide-react"
 import { format, isYesterday, isToday, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import confetti from "canvas-confetti"
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/Input"
 import { StickyNotes } from "@/components/StickyNotes"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
 export default function DashboardPage() {
   const [habits, setHabits] = useState<Habit[]>([])
@@ -165,7 +166,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-700 dark:text-foreground">
               <Flame className="w-5 h-5 text-indigo" />
               Micro-Hábitos
               <button 
@@ -210,13 +211,13 @@ export default function DashboardPage() {
                             <CheckCircle2 className="w-7 h-7 text-green" />
                           </div>
                         ) : (
-                          <Circle className="w-7 h-7 text-border group-hover:text-indigo/40 transition-colors" />
+                          <Circle className="w-7 h-7 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40 transition-colors" />
                         )}
                       </button>
                       <div>
                         <h3 className={cn(
                           "font-semibold dark:font-bold text-lg transition-all", 
-                          completedToday ? "text-muted line-through" : "text-foreground",
+                          completedToday ? "text-muted line-through" : "text-slate-700 dark:text-foreground",
                           hideHabits && "filter blur-[4px] select-none"
                         )}>
                           {hideHabits ? "Nome Oculto" : habit.name}
@@ -229,15 +230,24 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <div className={cn(
-                      "flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-xl transition-all",
-                      activeStreak > 0 
-                        ? "text-orange bg-orange/5 dark:bg-orange/10 ring-1 ring-orange/10 dark:ring-orange/20" 
-                        : "text-muted bg-muted/5",
-                      hideHabits && "filter blur-[3px] select-none"
-                    )}>
-                      <Flame className={cn("w-4 h-4", activeStreak > 0 && "fill-current animate-pulse")} />
-                      {hideHabits ? "••" : activeStreak}
+                    <div className="flex items-center gap-3">
+                      <Link 
+                        href={`/habits/board/?id=${habit.id}`}
+                        className="opacity-0 group-hover:opacity-100 p-2 text-muted hover:text-indigo hover:bg-indigo/5 rounded-xl transition-all"
+                        title="Quadro de Referência Visual"
+                      >
+                        <Palette className="w-4 h-4" />
+                      </Link>
+                      <div className={cn(
+                        "flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-xl transition-all",
+                        activeStreak > 0 
+                          ? "text-orange bg-orange/5 dark:bg-orange/10 ring-1 ring-orange/10 dark:ring-orange/20" 
+                          : "text-muted bg-muted/5",
+                        hideHabits && "filter blur-[3px] select-none"
+                      )}>
+                        <Flame className={cn("w-4 h-4", activeStreak > 0 && "fill-current animate-pulse")} />
+                        {hideHabits ? "••" : activeStreak}
+                      </div>
                     </div>
                   </div>
                 )
@@ -268,12 +278,12 @@ export default function DashboardPage() {
                     {task.is_completed ? (
                       <CheckCircle2 className="w-5 h-5 text-green" />
                     ) : (
-                      <Circle className="w-5 h-5 text-border group-hover:text-indigo/40" />
+                      <Circle className="w-5 h-5 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40" />
                     )}
                   </div>
                   <span className={cn(
                     "text-sm font-semibold dark:font-bold transition-all",
-                    task.is_completed ? "text-muted line-through" : "text-foreground"
+                    task.is_completed ? "text-muted line-through" : "text-slate-700 dark:text-foreground"
                   )}>
                     {task.title}
                   </span>

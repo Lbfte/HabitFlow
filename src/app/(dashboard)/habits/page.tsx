@@ -5,11 +5,12 @@ import { createClient } from "@/utils/supabase/client"
 import { Habit } from "@/types/database"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { Plus, Flame, Loader2, Trash2, Edit2 } from "lucide-react"
+import { Plus, Flame, Loader2, Trash2, Edit2, Palette } from "lucide-react"
 import { CreateHabitModal } from "@/components/CreateHabitModal"
 import { createHabit, updateHabit } from "@/app/actions/habits"
 import { cn } from "@/lib/utils"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
 export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([])
@@ -117,6 +118,13 @@ export default function HabitsPage() {
                   {habit.streak_count} dias
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Link 
+                    href={`/habits/board/?id=${habit.id}`}
+                    className="p-1.5 text-muted hover:text-indigo hover:bg-indigo/10 rounded-md transition-all"
+                    title="Quadro de Referência Visual"
+                  >
+                    <Palette className="w-3.5 h-3.5" />
+                  </Link>
                   <button 
                     onClick={() => { setEditingHabit(habit); setIsModalOpen(true); }}
                     className="p-1.5 text-muted hover:text-indigo hover:bg-indigo/10 rounded-md transition-all"
