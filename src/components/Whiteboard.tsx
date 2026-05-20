@@ -10,8 +10,8 @@ import { Maximize2, Minimize2, ArrowLeft, Cloud, CloudLightning, Loader2, Save, 
 import Link from "next/link"
 
 interface WhiteboardProps {
-  habitId: string
-  habitName: string
+  boardId: string
+  boardName: string
 }
 
 // Importar Excalidraw de forma dinâmica (desativando SSR)
@@ -80,7 +80,7 @@ const dataURLtoBlob = (dataurl: string): Blob => {
   return new Blob([u8arr], { type: mime })
 }
 
-export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
+export default function Whiteboard({ boardId, boardName }: WhiteboardProps) {
   const { theme } = useTheme()
   const [excalidrawAPI, setExcalidrawAPI] = useState<any>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -102,7 +102,7 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
       const { data, error } = await supabase
         .from("habit_boards")
         .select("content")
-        .eq("habit_id", habitId)
+        .eq("id", boardId)
         .single()
 
       if (error) {
@@ -146,7 +146,7 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
         isLoadedRef.current = true
       }, 500)
     }
-  }, [habitId, supabase, theme])
+  }, [boardId, supabase, theme])
 
   // Inicializa quando o ExcalidrawAPI estiver pronto
   useEffect(() => {
@@ -193,7 +193,7 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
           
           // 3. Gerar caminho exclusivo
           const uniqueId = Math.random().toString(36).substring(2, 15)
-          const filePath = `users/${user.id}/habits/${habitId}/${uniqueId}.webp`
+          const filePath = `users/${user.id}/whiteboards/${boardId}/${uniqueId}.webp`
           
           // 4. Upload para o Supabase Storage bucket 'whiteboards'
           const { error: uploadError } = await supabase.storage
@@ -226,23 +226,19 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
       // Salva a cena completa com as URLs da nuvem
       const { error } = await supabase
         .from("habit_boards")
-        .upsert(
-          {
-            habit_id: habitId,
-            user_id: user.id,
-            content: {
-              elements,
-              appState: {
-                theme: appState.theme,
-                viewBackgroundColor: appState.viewBackgroundColor,
-                gridSize: appState.gridSize,
-              },
-              files: processedFiles,
+        .update({
+          content: {
+            elements,
+            appState: {
+              theme: appState.theme,
+              viewBackgroundColor: appState.viewBackgroundColor,
+              gridSize: appState.gridSize,
             },
-            updated_at: new Date().toISOString(),
+            files: processedFiles,
           },
-          { onConflict: "habit_id" }
-        )
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", boardId)
 
       if (error) {
         if (error.code === "PGRST205") {
@@ -279,42 +275,43 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
       }`}
     >
       {/* Header do Quadro de Referência */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col md:flex-row md:items-center justify-between px-4 py-4 md:px-6 md:py-4 border-b border-border bg-surface shrink-0 gap-4">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           {!isFullscreen && (
-            <Link href="/habits">
+            <Link href="/whiteboards" className="shrink-0">
               <Button variant="ghost" size="sm" className="h-9 w-9 rounded-xl hover:bg-muted/5 p-0 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5 text-muted" />
               </Button>
             </Link>
           )}
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
-              Quadro Visual: <span className="text-indigo">{habitName}</span>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[13px] md:text-base font-bold tracking-tight text-foreground flex flex-col md:flex-row md:items-start md:gap-x-2 leading-tight">
+              <span className="text-muted text-[9px] font-semibold uppercase tracking-wider block shrink-0">Quadro Visual</span>
+              <span className="text-indigo truncate block max-w-full mt-0.5 md:mt-0">{boardName}</span>
             </h2>
-            <p className="text-xs text-muted font-medium">
-              Painel open-source do Excalidraw para imagens, marcações e estudos
+            <p className="text-[9px] md:text-xs text-muted font-semibold mt-0.5 leading-tight truncate">
+              Painel para imagens, marcações e etc
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto shrink-0">
           {/* Indicador de Status Geral */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/5 text-xs font-semibold text-muted">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3 rounded-xl bg-muted/5 text-xs font-semibold text-muted shrink-0" title={hasUnsavedChanges ? "Alterações não sincronizadas" : "Sincronizado"}>
             {isLocalMode ? (
               <>
                 <CloudOff className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                <span className="text-amber-600 dark:text-amber-500 font-bold">Modo Local (Offline)</span>
+                <span className="hidden md:inline text-amber-600 dark:text-amber-500 font-bold">Modo Local (Offline)</span>
               </>
             ) : hasUnsavedChanges ? (
               <>
                 <AlertCircle className="w-3.5 h-3.5 text-orange animate-bounce" />
-                <span className="text-orange">Alterações não sincronizadas</span>
+                <span className="hidden md:inline text-orange">Alterações não sincronizadas</span>
               </>
             ) : (
               <>
                 <Cloud className="w-3.5 h-3.5 text-green" />
-                <span className="text-green/80">Sincronizado na Nuvem</span>
+                <span className="hidden md:inline text-green/80">Sincronizado na Nuvem</span>
               </>
             )}
           </div>
@@ -326,7 +323,7 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
               size="sm"
               onClick={saveToCloud}
               disabled={saveStatus === "saving" || !excalidrawAPI}
-              className="h-9 px-3 rounded-xl flex items-center gap-2 font-bold transition-all uppercase tracking-wider text-[10px]"
+              className="h-9 px-3 rounded-xl flex items-center gap-2 font-bold transition-all uppercase tracking-wider text-[10px] flex-1 md:flex-initial justify-center"
             >
               {saveStatus === "saving" ? (
                 <>
@@ -336,7 +333,8 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
               ) : (
                 <>
                   <Save className="w-3.5 h-3.5" />
-                  <span>Salvar na Nuvem</span>
+                  <span className="hidden sm:inline">Salvar na Nuvem</span>
+                  <span className="inline sm:hidden">Salvar</span>
                 </>
               )}
             </Button>
@@ -347,7 +345,7 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
             variant="secondary"
             size="sm"
             onClick={toggleFullscreen}
-            className="h-9 px-3 rounded-xl flex items-center gap-2 font-bold transition-all uppercase tracking-wider text-[10px]"
+            className="h-9 px-3 rounded-xl flex items-center gap-2 font-bold transition-all uppercase tracking-wider text-[10px] flex-1 md:flex-initial justify-center shrink-0"
           >
             {isFullscreen ? (
               <>
@@ -357,7 +355,8 @@ export default function Whiteboard({ habitId, habitName }: WhiteboardProps) {
             ) : (
               <>
                 <Maximize2 className="w-4 h-4" />
-                <span>Tela Cheia</span>
+                <span className="hidden sm:inline">Tela Cheia</span>
+                <span className="inline sm:hidden">Cheia</span>
               </>
             )}
           </Button>

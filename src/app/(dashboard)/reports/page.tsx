@@ -57,13 +57,13 @@ export default function ReportsPage() {
   )
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <header className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Relatórios</h1>
           <p className="text-muted">Documente sua jornada e compartilhe insights.</p>
         </div>
-        <Button onClick={handleCreateReport} disabled={creating}>
+        <Button onClick={handleCreateReport} disabled={creating} className="w-full sm:w-auto">
           {creating ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : (

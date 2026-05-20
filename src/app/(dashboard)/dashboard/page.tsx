@@ -24,6 +24,8 @@ export default function DashboardPage() {
   const [completingId, setCompletingId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hideHabits, setHideHabits] = useState(false)
+  const [linkedBoards, setLinkedBoards] = useState<Record<string, string>>({})
+  const [linkedTasks, setLinkedTasks] = useState<Record<string, string>>({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -40,20 +42,43 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const { data: habitsData } = await supabase
-      .from('habits')
-      .select('*')
-      .order('created_at', { ascending: true })
-    
-    const { data: tasksData } = await supabase
-      .from('daily_tasks')
-      .select('*')
-      .eq('due_date', format(new Date(), 'yyyy-MM-dd'))
-      .order('priority', { ascending: false })
+    try {
+      // 1. Buscar hábitos
+      const { data: habitsData } = await supabase
+        .from('habits')
+        .select('*')
+        .order('created_at', { ascending: true })
+      
+      // 2. Buscar tarefas do dia
+      const { data: tasksData } = await supabase
+        .from('daily_tasks')
+        .select('*')
+        .eq('due_date', format(new Date(), 'yyyy-MM-dd'))
+        .order('priority', { ascending: false })
 
-    if (habitsData) setHabits(habitsData)
-    if (tasksData) setTasks(tasksData)
-    setLoading(false)
+      if (habitsData) setHabits(habitsData)
+      if (tasksData) setTasks(tasksData)
+
+      // 3. Buscar quadros brancos vinculados
+      const { data: boardsData } = await supabase
+        .from('habit_boards')
+        .select('id, habit_id, task_id')
+
+      if (boardsData) {
+        const habitMap: Record<string, string> = {}
+        const taskMap: Record<string, string> = {}
+        boardsData.forEach(b => {
+          if (b.habit_id) habitMap[b.habit_id] = b.id
+          if (b.task_id) taskMap[b.task_id] = b.id
+        })
+        setLinkedBoards(habitMap)
+        setLinkedTasks(taskMap)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleCreateHabit = async (name: string, goal: string, interval: number) => {
@@ -143,20 +168,20 @@ export default function DashboardPage() {
   )
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-28 sm:pb-8">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hoje</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Hoje</h1>
           <p className="text-muted">
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm">
+        <div className="flex gap-2 shrink-0">
+          <Button variant="secondary" size="sm" className="flex-1 sm:flex-initial">
             <CalendarIcon className="w-4 h-4 mr-2" />
             Agenda
           </Button>
-          <Button size="sm" onClick={() => setIsModalOpen(true)}>
+          <Button size="sm" onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-initial">
             <Plus className="w-4 h-4 mr-2" />
             Novo
           </Button>
@@ -165,19 +190,19 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
             <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-700 dark:text-foreground">
               <Flame className="w-5 h-5 text-indigo" />
-              Micro-Hábitos
+              <span>Micro-Hábitos</span>
               <button 
                 onClick={toggleHideHabits} 
-                className="ml-2 text-muted hover:text-foreground transition-colors"
+                className="ml-1 text-muted hover:text-foreground transition-colors p-1"
                 title={hideHabits ? "Mostrar hábitos" : "Ocultar hábitos"}
               >
                 {hideHabits ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </CardTitle>
-            <span className="text-[10px] font-black text-indigo bg-indigo/5 dark:bg-indigo/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-indigo/10 dark:ring-0">
+            <span className="text-[10px] font-black text-indigo bg-indigo/5 dark:bg-indigo/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-indigo/10 dark:ring-0 w-fit shrink-0">
               {habits.filter(h => h.last_completed_at && isToday(parseISO(h.last_completed_at))).length}/{habits.length} Concluídos
             </span>
           </CardHeader>
@@ -231,13 +256,16 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Link 
-                        href={`/habits/board/?id=${habit.id}`}
-                        className="p-2 text-muted/50 hover:text-indigo hover:bg-indigo/5 rounded-xl transition-all"
-                        title="Quadro de Referência Visual"
-                      >
-                        <Palette className="w-4 h-4" />
-                      </Link>
+                      {/* Mostrar paleta SOMENTE se houver quadro vinculado a este hábito */}
+                      {linkedBoards[habit.id] && (
+                        <Link 
+                          href={`/whiteboards/board?id=${linkedBoards[habit.id]}`}
+                          className="p-2 text-indigo bg-indigo/5 dark:bg-indigo/10 rounded-xl transition-all hover:bg-indigo hover:text-white ring-1 ring-indigo/10 dark:ring-0"
+                          title="Abrir Quadro de Estudos"
+                        >
+                          <Palette className="w-4 h-4 animate-pulse" />
+                        </Link>
+                      )}
                       <div className={cn(
                         "flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-xl transition-all",
                         activeStreak > 0 
@@ -269,24 +297,38 @@ export default function DashboardPage() {
                 <div 
                   key={task.id}
                   className={cn(
-                    "flex items-start gap-3 p-3 rounded-xl hover:bg-muted/5 transition-colors cursor-pointer group",
+                    "flex items-center justify-between p-3 rounded-xl hover:bg-muted/5 transition-colors cursor-pointer group",
                     task.is_completed && "opacity-40"
                   )}
                   onClick={() => toggleTask(task.id, task.is_completed)}
                 >
-                  <div className="mt-0.5">
-                    {task.is_completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green" />
-                    ) : (
-                      <Circle className="w-5 h-5 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40" />
-                    )}
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="mt-0.5 shrink-0">
+                      {task.is_completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-green" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40" />
+                      )}
+                    </div>
+                    <span className={cn(
+                      "text-sm font-semibold dark:font-bold transition-all text-slate-700 dark:text-foreground",
+                      task.is_completed && "text-muted line-through"
+                    )}>
+                      {task.title}
+                    </span>
                   </div>
-                  <span className={cn(
-                    "text-sm font-semibold dark:font-bold transition-all",
-                    task.is_completed ? "text-muted line-through" : "text-slate-700 dark:text-foreground"
-                  )}>
-                    {task.title}
-                  </span>
+                  
+                  {/* Mostrar paleta se houver quadro vinculado a esta tarefa */}
+                  {linkedTasks[task.id] && (
+                    <Link 
+                      href={`/whiteboards/board?id=${linkedTasks[task.id]}`}
+                      className="p-1.5 text-indigo bg-indigo/5 dark:bg-indigo/10 rounded-lg hover:bg-indigo hover:text-white transition-all ring-1 ring-indigo/10 dark:ring-0 shrink-0"
+                      title="Abrir Quadro de Estudos da Tarefa"
+                      onClick={(e) => e.stopPropagation()} // Previne marcar/desmarcar a tarefa ao clicar no quadro!
+                    >
+                      <Palette className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
                 </div>
               ))}
               {isAddingTask ? (

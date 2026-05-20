@@ -111,10 +111,10 @@ export default function CalendarPage() {
   const categories = { ...defaultCategories, ...customCategories }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight capitalize">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight capitalize">
             {view === 'day' 
               ? format(selectedDate, "d 'de' MMMM yyyy", { locale: ptBR })
               : format(currentDate, "MMMM yyyy", { locale: ptBR })}

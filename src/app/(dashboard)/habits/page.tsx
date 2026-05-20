@@ -18,10 +18,12 @@ export default function HabitsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hideHabits, setHideHabits] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
+  const [linkedBoards, setLinkedBoards] = useState<Record<string, string>>({})
+  
   const supabase = createClient()
 
   useEffect(() => {
-    fetchHabits()
+    fetchData()
     const savedHideHabits = localStorage.getItem('hideHabits')
     if (savedHideHabits) setHideHabits(savedHideHabits === 'true')
   }, [])
@@ -32,15 +34,34 @@ export default function HabitsPage() {
     localStorage.setItem('hideHabits', String(next))
   }
 
-  const fetchHabits = async () => {
+  const fetchData = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('habits')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (data) setHabits(data)
-    setLoading(false)
+    try {
+      // 1. Buscar hábitos
+      const { data: habitsData } = await supabase
+        .from('habits')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (habitsData) setHabits(habitsData)
+
+      // 2. Buscar vínculos com quadros brancos
+      const { data: boardsData } = await supabase
+        .from('habit_boards')
+        .select('id, habit_id')
+      
+      if (boardsData) {
+        const map: Record<string, string> = {}
+        boardsData.forEach(b => {
+          if (b.habit_id) map[b.habit_id] = b.id
+        })
+        setLinkedBoards(map)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSaveHabit = async (name: string, goal: string, interval: number) => {
@@ -84,11 +105,11 @@ export default function HabitsPage() {
   )
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <header className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">Micro-Hábitos</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Micro-Hábitos</h1>
             <button 
               onClick={toggleHideHabits} 
               className="mt-1 text-muted hover:text-foreground transition-colors"
@@ -99,7 +120,7 @@ export default function HabitsPage() {
           </div>
           <p className="text-muted">Mantenha a constância com metas ridiculamente pequenas.</p>
         </div>
-        <Button onClick={() => { setEditingHabit(null); setIsModalOpen(true); }}>
+        <Button onClick={() => { setEditingHabit(null); setIsModalOpen(true); }} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Novo Hábito
         </Button>
@@ -107,12 +128,22 @@ export default function HabitsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {habits.map((habit) => (
-          <Card key={habit.id} className="shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface hover:shadow-lg dark:hover:shadow-indigo/20 transition-all group overflow-hidden">
+          <Card key={habit.id} className="shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface hover:shadow-lg dark:hover:shadow-indigo/20 transition-all group overflow-hidden border border-border flex flex-col justify-between min-h-[180px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div className="bg-indigo/5 p-2 rounded-lg text-indigo group-hover:bg-indigo group-hover:text-white transition-colors">
                 <Flame className="w-5 h-5" />
               </div>
               <div className="flex items-center gap-2">
+                {/* Ícone de Paleta caso tenha quadro vinculado */}
+                {linkedBoards[habit.id] && (
+                  <Link 
+                    href={`/whiteboards/board?id=${linkedBoards[habit.id]}`}
+                    className="flex items-center justify-center p-1.5 text-indigo bg-indigo/5 dark:bg-indigo/10 rounded-lg hover:bg-indigo hover:text-white transition-all ring-1 ring-indigo/10 dark:ring-0"
+                    title="Abrir Quadro de Estudos vinculado"
+                  >
+                    <Palette className="w-3.5 h-3.5 animate-pulse" />
+                  </Link>
+                )}
                 <div className="flex items-center gap-1 text-orange bg-orange/5 dark:bg-orange/10 px-2 py-1 rounded-lg text-xs font-bold ring-1 ring-orange/10 dark:ring-orange/20">
                   <Flame className="w-3 h-3 fill-current" />
                   {habit.streak_count} dias
@@ -133,20 +164,16 @@ export default function HabitsPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <h3 className={cn("font-semibold dark:font-bold text-lg mb-1 group-hover:text-indigo transition-colors", hideHabits && "filter blur-[4px] select-none")}>
-                {hideHabits ? "Hábito Oculto" : habit.name}
-              </h3>
-              <p className={cn("text-sm text-muted mb-4 line-clamp-2 min-h-[40px] font-medium", hideHabits && "filter blur-[3px] select-none")}>
-                {hideHabits ? "Descrição do hábito confidencial." : habit.goal_description}
-              </p>
-              
-              <Link href={`/habits/board/?id=${habit.id}`} className="block mb-4">
-                <Button variant="secondary" size="sm" className="w-full text-xs font-bold py-2 uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl">
-                  <Palette className="w-4 h-4" />
-                  Quadro de Estudos
-                </Button>
-              </Link>
+            
+            <CardContent className="flex-1 flex flex-col justify-between">
+              <div className="mb-4">
+                <h3 className={cn("font-bold text-lg mb-1 group-hover:text-indigo transition-colors", hideHabits && "filter blur-[4px] select-none")}>
+                  {hideHabits ? "Hábito Oculto" : habit.name}
+                </h3>
+                <p className={cn("text-sm text-muted line-clamp-2 min-h-[40px] font-medium", hideHabits && "filter blur-[3px] select-none")}>
+                  {hideHabits ? "Descrição do hábito confidencial." : habit.goal_description}
+                </p>
+              </div>
               
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted">

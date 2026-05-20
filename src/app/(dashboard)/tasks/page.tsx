@@ -113,13 +113,13 @@ export default function TasksPage() {
   )
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-700">
-      <header className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
           <p className="text-muted">Mantenha o foco no que realmente importa hoje.</p>
         </div>
-        <div className="bg-indigo/10 px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo">
+        <div className="bg-indigo/10 px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo w-fit self-start sm:self-auto">
           <Calendar className="w-4 h-4" />
           <span className="text-[10px] font-black uppercase tracking-widest">
             {format(new Date(), "d 'de' MMMM", { locale: ptBR })}
