@@ -28,10 +28,14 @@ export default function WhiteboardsPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBoard, setEditingBoard] = useState<WhiteboardRecord | null>(null)
+  const [hideHabits, setHideHabits] = useState(false)
+  const [hideTasks, setHideTasks] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
     fetchBoards()
+    setHideHabits(localStorage.getItem('hideHabits') === 'true')
+    setHideTasks(localStorage.getItem('hideTasks') === 'true')
   }, [])
 
   const fetchBoards = async () => {
@@ -226,15 +230,15 @@ export default function WhiteboardsPage() {
                 {/* Vínculos / Tags de Conexão */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {board.habits && (
-                    <div className="flex items-center gap-1 text-orange bg-orange/5 dark:bg-orange/10 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 ring-orange/10">
+                    <div className={cn("flex items-center gap-1 text-orange bg-orange/5 dark:bg-orange/10 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 ring-orange/10", hideHabits && "filter blur-[3px] select-none opacity-80")}>
                       <Flame className="w-3.5 h-3.5" />
-                      <span>{board.habits.name}</span>
+                      <span>{hideHabits ? "Hábito Oculto" : board.habits.name}</span>
                     </div>
                   )}
                   {board.daily_tasks && (
-                    <div className="flex items-center gap-1 text-green bg-green/5 dark:bg-green/10 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 ring-green/10">
+                    <div className={cn("flex items-center gap-1 text-green bg-green/5 dark:bg-green/10 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 ring-green/10", hideTasks && "filter blur-[3px] select-none opacity-80")}>
                       <CheckSquare className="w-3.5 h-3.5" />
-                      <span>{board.daily_tasks.title}</span>
+                      <span>{hideTasks ? "Tarefa Oculta" : board.daily_tasks.title}</span>
                     </div>
                   )}
                   {!board.habit_id && !board.task_id && (

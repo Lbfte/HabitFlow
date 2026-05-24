@@ -6,7 +6,7 @@ import { DailyTask } from "@/types/database"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { CheckCircle2, Circle, Plus, Trash2, Loader2, Calendar, Edit2, Save, X } from "lucide-react"
+import { CheckCircle2, Circle, Plus, Trash2, Loader2, Calendar, Edit2, Save, X, Eye, EyeOff } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -18,11 +18,20 @@ export default function TasksPage() {
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState("")
+  const [hideTasks, setHideTasks] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
     fetchTasks()
+    const savedHideTasks = localStorage.getItem('hideTasks')
+    if (savedHideTasks) setHideTasks(savedHideTasks === 'true')
   }, [])
+
+  const toggleHideTasks = () => {
+    const next = !hideTasks
+    setHideTasks(next)
+    localStorage.setItem('hideTasks', String(next))
+  }
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -116,7 +125,16 @@ export default function TasksPage() {
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
+            <button 
+              onClick={toggleHideTasks} 
+              className="mt-1 text-muted hover:text-foreground transition-colors"
+              title={hideTasks ? "Mostrar tarefas" : "Ocultar tarefas"}
+            >
+              {hideTasks ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
           <p className="text-muted">Mantenha o foco no que realmente importa hoje.</p>
         </div>
         <div className="bg-indigo/10 px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo w-fit self-start sm:self-auto">
@@ -185,10 +203,11 @@ export default function TasksPage() {
                       onClick={() => !task.is_completed && startEditing(task)}
                       className={cn(
                         "text-lg font-semibold dark:font-bold transition-all flex-1 cursor-text",
-                        task.is_completed ? "text-muted line-through" : "text-foreground hover:text-indigo"
+                        task.is_completed ? "text-muted line-through" : "text-foreground hover:text-indigo",
+                        hideTasks && "filter blur-[4px] select-none"
                       )}
                     >
-                      {task.title}
+                      {hideTasks ? "Tarefa Oculta" : task.title}
                     </span>
                   )}
                 </div>

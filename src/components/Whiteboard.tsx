@@ -80,6 +80,16 @@ const dataURLtoBlob = (dataurl: string): Blob => {
   return new Blob([u8arr], { type: mime })
 }
 
+// Converte Blob para dataURL (base64)
+const blobToDataURL = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
 export default function Whiteboard({ boardId, boardName }: WhiteboardProps) {
   const { theme } = useTheme()
   const [excalidrawAPI, setExcalidrawAPI] = useState<any>(null)
@@ -185,35 +195,54 @@ export default function Whiteboard({ boardId, boardName }: WhiteboardProps) {
         if (file.dataURL && file.dataURL.startsWith("data:")) {
           hasNewUploads = true
           
-          // 1. Converter base64 para Blob
-          const originalBlob = dataURLtoBlob(file.dataURL)
-          
-          // 2. Comprimir para WebP (70% de qualidade)
-          const compressedBlob = await compressToWebp(originalBlob, 0.7)
-          
-          // 3. Gerar caminho exclusivo
-          const uniqueId = Math.random().toString(36).substring(2, 15)
-          const filePath = `users/${user.id}/whiteboards/${boardId}/${uniqueId}.webp`
-          
-          // 4. Upload para o Supabase Storage bucket 'whiteboards'
-          const { error: uploadError } = await supabase.storage
-            .from("whiteboards")
-            .upload(filePath, compressedBlob, {
-              contentType: "image/webp",
-              upsert: true,
-            })
+          try {
+            // 1. Converter base64 para Blob
+            const originalBlob = dataURLtoBlob(file.dataURL)
+            
+            // 2. Comprimir para WebP (70% de qualidade)
+            let compressedBlob: Blob
+            try {
+              compressedBlob = await compressToWebp(originalBlob, 0.7)
+            } catch (webpErr) {
+              console.warn("Erro ao comprimir imagem para WebP, usando original:", webpErr)
+              compressedBlob = originalBlob
+            }
+            
+            // 3. Gerar caminho exclusivo
+            const uniqueId = Math.random().toString(36).substring(2, 15)
+            const filePath = `users/${user.id}/whiteboards/${boardId}/${uniqueId}.webp`
+            
+            // 4. Tentar upload para o Supabase Storage bucket 'whiteboards'
+            const { error: uploadError } = await supabase.storage
+              .from("whiteboards")
+              .upload(filePath, compressedBlob, {
+                contentType: "image/webp",
+                upsert: true,
+              })
 
-          if (uploadError) throw uploadError
+            if (uploadError) {
+              // Se falhar o upload do storage, usamos o fallback de salvar no DB como base64 comprimido
+              console.warn("Falha no upload do Supabase Storage. Usando fallback de salvar no banco:", uploadError)
+              const compressedBase64 = await blobToDataURL(compressedBlob)
+              processedFiles[fileId] = {
+                ...file,
+                dataURL: compressedBase64,
+              }
+            } else {
+              // 5. Obter URL pública se o upload deu certo
+              const { data: { publicUrl } } = supabase.storage
+                .from("whiteboards")
+                .getPublicUrl(filePath)
 
-          // 5. Obter URL pública
-          const { data: { publicUrl } } = supabase.storage
-            .from("whiteboards")
-            .getPublicUrl(filePath)
-
-          // 6. Atualizar a URL no objeto de arquivos
-          processedFiles[fileId] = {
-            ...file,
-            dataURL: publicUrl,
+              // 6. Atualizar a URL no objeto de arquivos
+              processedFiles[fileId] = {
+                ...file,
+                dataURL: publicUrl,
+              }
+            }
+          } catch (fileErr) {
+            console.error(`Erro ao processar arquivo ${fileId}:`, fileErr)
+            // Se der erro geral no processamento, mantém o original (base64) para não perder o desenho
           }
         }
       }
