@@ -27,7 +27,8 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login`,
+        // Include the basePath (/HabitFlow) for GitHub Pages deployment
+        emailRedirectTo: `${window.location.origin}${window.location.hostname.includes('github.io') ? '/HabitFlow' : ''}/login`,
       },
     })
 
