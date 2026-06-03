@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/Input"
 import { StickyNotes } from "@/components/StickyNotes"
 import { Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { MinimalTimerWidget } from "@/components/MinimalTimerWidget"
 
 export default function DashboardPage() {
   const [habits, setHabits] = useState<Habit[]>([])
@@ -189,7 +190,7 @@ export default function DashboardPage() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface overflow-hidden">
+        <Card className="lg:col-span-2 border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface overflow-hidden self-start">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
             <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-700 dark:text-foreground">
               <Flame className="w-5 h-5 text-indigo" />
@@ -208,7 +209,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {habits.map((habit) => {
+              {habits.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+                  <Flame className="w-10 h-10 text-muted/30" />
+                  <p className="text-sm text-muted font-medium">Nenhum hábito ainda.<br />Crie seu primeiro hábito!</p>
+                </div>
+              ) : habits.map((habit) => {
                 const completedToday = habit.last_completed_at && isToday(parseISO(habit.last_completed_at))
                 const activeStreak = getActiveStreak(habit)
                 
@@ -256,7 +262,6 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {/* Mostrar paleta SOMENTE se houver quadro vinculado a este hábito */}
                       {linkedBoards[habit.id] && (
                         <Link 
                           href={`/whiteboards/board?id=${linkedBoards[habit.id]}`}
@@ -285,6 +290,8 @@ export default function DashboardPage() {
         </Card>
 
         <div className="space-y-6">
+          <MinimalTimerWidget />
+          
           <Card className="border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-bold flex items-center gap-2">

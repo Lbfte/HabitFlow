@@ -224,12 +224,12 @@ function EditorContent() {
               <div className="flex flex-wrap items-center gap-4 animate-in slide-in-from-left-2">
                 <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl ring-1 ring-border shadow-sm">
                   <Lock className="w-3.5 h-3.5 text-muted" />
-                  <input 
-                    placeholder="PIN opcional" 
-                    className="bg-transparent border-none focus:ring-0 text-xs font-bold w-24 outline-none text-foreground"
-                    value={report.access_code || ""}
-                    onChange={(e) => setReport({ ...report, access_code: e.target.value })}
-                  />
+                    <input 
+                      placeholder="PIN opcional" 
+                      className="bg-transparent border-none focus:ring-0 text-base font-medium w-32 outline-none text-foreground font-sans" 
+                      value={report.access_code || ""}
+                      onChange={(e) => setReport({ ...report, access_code: e.target.value })}
+                    />
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -256,7 +256,10 @@ function EditorContent() {
             />
           ) : (
             <Card className="p-8 border-none shadow-xl bg-surface min-h-[500px] ring-1 ring-border">
-              <article className="prose prose-indigo dark:prose-invert max-w-none">
+              <article 
+                className="prose prose-indigo dark:prose-invert max-w-none text-sm"
+                style={{ fontFamily: 'var(--font-fira-code), monospace', color: 'var(--foreground) !important', opacity: 0.95, fontSize: '0.875rem' }}
+              >
                 <ReactMarkdown>{report.content || "*Nenhum conteúdo para visualizar.*"}</ReactMarkdown>
               </article>
             </Card>

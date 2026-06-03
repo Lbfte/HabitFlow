@@ -16,7 +16,8 @@ import {
   Moon,
   Palette,
   MoreHorizontal,
-  X
+  X,
+  Timer
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/client"
 import { useTheme } from "@/components/ThemeProvider"
@@ -28,6 +29,7 @@ const navItems = [
   { icon: Palette, label: "Quadros Visuais", href: "/whiteboards" },
   { icon: FileText, label: "Relatórios", href: "/reports" },
   { icon: Calendar, label: "Calendário", href: "/calendar" },
+  { icon: Timer, label: "Foco", href: "/focus" },
 ]
 
 export function Sidebar() {
@@ -53,6 +55,7 @@ export function Sidebar() {
 
   // Links secundários mostrados na gaveta "Mais" no mobile
   const moreMobileItems = [
+    { icon: Timer, label: "Foco", href: "/focus" },
     { icon: FileText, label: "Relatórios", href: "/reports" },
     { icon: Calendar, label: "Calendário", href: "/calendar" },
   ]

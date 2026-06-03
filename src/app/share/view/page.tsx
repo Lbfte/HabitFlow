@@ -151,7 +151,10 @@ function ShareContent() {
 
           <div className="h-px bg-border w-full opacity-50" />
 
-          <div className="prose prose-lg prose-indigo dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:leading-relaxed prose-p:font-medium prose-p:text-foreground/80">
+          <div 
+            className="prose prose-lg prose-indigo dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:leading-relaxed prose-p:font-medium text-sm"
+            style={{ fontFamily: 'var(--font-fira-code), monospace', color: 'color-mix(in srgb, var(--foreground) 95%, transparent)' }}
+          >
             <ReactMarkdown>{report.content || "*Este relatório não possui conteúdo.*"}</ReactMarkdown>
           </div>
 

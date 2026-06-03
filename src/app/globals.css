@@ -45,10 +45,14 @@ body {
     border-color: var(--border);
   }
   
-  /* Corrige o fundo de selects e inputs nativos no modo escuro */
-  select, input, textarea {
+  /* Corrige o fundo e a fonte de selects e inputs nativos/customizados */
+  /* Labels e o input de título (com classe .text-4xl) NÃO são afetados */
+  select, input:not(.text-4xl), textarea {
     background-color: var(--surface);
-    color: var(--foreground);
+    color: color-mix(in srgb, var(--foreground) 95%, transparent) !important;
+    font-family: var(--font-fira-code), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 0.875rem !important; /* ligeiramente menor que o padrão (1rem) */
+    font-weight: 400;
   }
   
   option {
@@ -76,4 +80,10 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 10px;
+}
+
+/* Utilitário para forçar cor indigo do tema (imune a sobreposições do Tailwind v4) */
+.btn-indigo-active {
+  background-color: var(--indigo) !important;
+  color: white !important;
 }
