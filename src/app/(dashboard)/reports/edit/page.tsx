@@ -32,7 +32,7 @@ import {
 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { cn, parseTaskTitle } from "@/lib/utils"
 
 function EditorContent() {
   const searchParams = useSearchParams()
@@ -328,7 +328,7 @@ function EditorContent() {
                       )}>
                         {linkedTaskIds.includes(task.id) && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <span className="truncate">{task.title}</span>
+                      <span className="truncate">{parseTaskTitle(task.title).cleanTitle}</span>
                     </button>
                   ))}
                 </div>

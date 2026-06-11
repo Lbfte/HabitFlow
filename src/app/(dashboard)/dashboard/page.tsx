@@ -5,13 +5,13 @@ import { createClient } from "@/utils/supabase/client"
 import { Habit, DailyTask } from "@/types/database"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2, Palette } from "lucide-react"
+import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2, Palette, Clock } from "lucide-react"
 import { format, isYesterday, isToday, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import confetti from "canvas-confetti"
 import { completeHabit, createHabit } from "@/app/actions/habits"
 import { CreateHabitModal } from "@/components/CreateHabitModal"
-import { cn } from "@/lib/utils"
+import { cn, parseTaskTitle, sortTasks } from "@/lib/utils"
 import { Input } from "@/components/ui/Input"
 import { StickyNotes } from "@/components/StickyNotes"
 import { Eye, EyeOff } from "lucide-react"
@@ -58,7 +58,7 @@ export default function DashboardPage() {
         .order('priority', { ascending: false })
 
       if (habitsData) setHabits(habitsData)
-      if (tasksData) setTasks(tasksData)
+      if (tasksData) setTasks(sortTasks(tasksData))
 
       // 3. Buscar quadros brancos vinculados
       const { data: boardsData } = await supabase
@@ -121,7 +121,7 @@ export default function DashboardPage() {
       .eq('id', id)
 
     if (!error) {
-      setTasks(tasks.map(t => t.id === id ? { ...t, is_completed: !currentStatus } : t))
+      setTasks(sortTasks(tasks.map(t => t.id === id ? { ...t, is_completed: !currentStatus } : t)))
     }
   }
 
@@ -155,7 +155,7 @@ export default function DashboardPage() {
       .single()
 
     if (!error && data) {
-      setTasks([...tasks, data])
+      setTasks(sortTasks([...tasks, data]))
       setNewTaskTitle("")
       setIsAddingTask(false)
     }
@@ -300,44 +300,55 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {tasks.map((task) => (
-                <div 
-                  key={task.id}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-xl hover:bg-muted/5 transition-colors cursor-pointer group",
-                    task.is_completed && "opacity-40"
-                  )}
-                  onClick={() => toggleTask(task.id, task.is_completed)}
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="mt-0.5 shrink-0">
-                      {task.is_completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40" />
-                      )}
+              {tasks.map((task) => {
+                const { time, cleanTitle } = parseTaskTitle(task.title)
+                return (
+                  <div 
+                    key={task.id}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-xl hover:bg-muted/5 transition-colors cursor-pointer group",
+                      task.is_completed && "opacity-40"
+                    )}
+                    onClick={() => toggleTask(task.id, task.is_completed)}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="mt-0.5 shrink-0">
+                        {task.is_completed ? (
+                          <CheckCircle2 className="w-5 h-5 text-green" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-slate-300 dark:text-slate-700 group-hover:text-indigo/40" />
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className={cn(
+                          "text-sm font-semibold dark:font-bold transition-all text-slate-700 dark:text-foreground truncate",
+                          task.is_completed && "text-muted line-through"
+                        )}>
+                          {cleanTitle}
+                        </span>
+                        {time && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-black text-indigo mt-0.5">
+                            <Clock className="w-3 h-3" />
+                            {time}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className={cn(
-                      "text-sm font-semibold dark:font-bold transition-all text-slate-700 dark:text-foreground",
-                      task.is_completed && "text-muted line-through"
-                    )}>
-                      {task.title}
-                    </span>
+                    
+                    {/* Mostrar paleta se houver quadro vinculado a esta tarefa */}
+                    {linkedTasks[task.id] && (
+                      <Link 
+                        href={`/whiteboards/board?id=${linkedTasks[task.id]}`}
+                        className="p-1.5 text-indigo bg-indigo/5 dark:bg-indigo/10 rounded-lg hover:bg-indigo hover:text-white transition-all ring-1 ring-indigo/10 dark:ring-0 shrink-0"
+                        title="Abrir Quadro de Estudos da Tarefa"
+                        onClick={(e) => e.stopPropagation()} // Previne marcar/desmarcar a tarefa ao clicar no quadro!
+                      >
+                        <Palette className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
                   </div>
-                  
-                  {/* Mostrar paleta se houver quadro vinculado a esta tarefa */}
-                  {linkedTasks[task.id] && (
-                    <Link 
-                      href={`/whiteboards/board?id=${linkedTasks[task.id]}`}
-                      className="p-1.5 text-indigo bg-indigo/5 dark:bg-indigo/10 rounded-lg hover:bg-indigo hover:text-white transition-all ring-1 ring-indigo/10 dark:ring-0 shrink-0"
-                      title="Abrir Quadro de Estudos da Tarefa"
-                      onClick={(e) => e.stopPropagation()} // Previne marcar/desmarcar a tarefa ao clicar no quadro!
-                    >
-                      <Palette className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
-                </div>
-              ))}
+                )
+              })}
               {isAddingTask ? (
                 <form onSubmit={handleAddTask} className="mt-2 animate-in slide-in-from-top-2">
                   <Input 

@@ -29,7 +29,16 @@
   --muted: #ADB5BD;
   --indigo: #7B61FF;
   --green: #40C057;
+  color-scheme: dark;
 }
+
+.dark input,
+.dark select,
+.dark textarea {
+  color-scheme: dark !important;
+}
+
+
 
 body {
   background: var(--background);

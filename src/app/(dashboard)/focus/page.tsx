@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Play, Pause, RotateCcw, Timer as TimerIcon, Clock, Coffee, BookOpen, SkipForward, ListTodo, Zap, Award, CheckCircle2, Circle, Volume2, VolumeX } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { cn } from "@/lib/utils"
+import { cn, parseTaskTitle, sortTasks } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { DailyTask } from "@/types/database"
 import { format } from "date-fns"
@@ -271,9 +271,7 @@ export default function FocusPage() {
       const { data } = await supabase
         .from('daily_tasks')
         .select('*')
-        .order('is_completed', { ascending: true })
-        .order('created_at', { ascending: false })
-      if (data) setTasks(data)
+      if (data) setTasks(sortTasks(data))
     } catch (err) {
       console.error("Error loading tasks for focus page:", err)
     }
@@ -286,7 +284,7 @@ export default function FocusPage() {
       .eq('id', task.id)
 
     if (!error) {
-      setTasks(tasks.map(t => t.id === task.id ? { ...t, is_completed: !task.is_completed } : t))
+      setTasks(sortTasks(tasks.map(t => t.id === task.id ? { ...t, is_completed: !task.is_completed } : t)))
       if (task.id === selectedTaskId && !task.is_completed) {
         setSelectedTaskId("")
       }
@@ -458,7 +456,7 @@ export default function FocusPage() {
             .eq('id', selectedTaskId)
             .then(({ error }) => {
               if (!error) {
-                setTasks(prev => prev.map(t => t.id === selectedTaskId ? { ...t, is_completed: true } : t))
+                setTasks(prev => sortTasks(prev.map(t => t.id === selectedTaskId ? { ...t, is_completed: true } : t)))
                 setSelectedTaskId("")
               }
             })
@@ -598,11 +596,15 @@ export default function FocusPage() {
                   className="w-full text-xs font-semibold rounded-xl border border-border bg-surface p-2.5 px-3 focus:outline-none focus:ring-1 focus:ring-indigo text-slate-700 dark:text-foreground"
                 >
                   <option value="">Selecione uma tarefa para focar</option>
-                  {tasks.filter(t => !t.is_completed).map((task) => (
-                    <option key={task.id} value={task.id}>
-                      {task.title}
-                    </option>
-                  ))}
+                  {tasks.filter(t => !t.is_completed).map((task) => {
+                    const { cleanTitle, time } = parseTaskTitle(task.title)
+                    const displayTitle = time ? `[${time}] ${cleanTitle}` : cleanTitle
+                    return (
+                      <option key={task.id} value={task.id}>
+                        {displayTitle}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
 
@@ -712,8 +714,8 @@ export default function FocusPage() {
                   )}
                   
                   {selectedTask ? (
-                    <span className="text-[9px] font-bold text-[var(--indigo)] dark:text-indigo-450 max-w-[140px] truncate mt-1 animate-pulse" title={selectedTask.title}>
-                      {selectedTask.title}
+                    <span className="text-[9px] font-bold text-[var(--indigo)] dark:text-indigo-450 max-w-[140px] truncate mt-1 animate-pulse" title={parseTaskTitle(selectedTask.title).cleanTitle}>
+                      {parseTaskTitle(selectedTask.title).cleanTitle}
                     </span>
                   ) : (
                     <span className="text-muted/50 font-bold uppercase tracking-widest text-[8px] mt-1.5">
@@ -968,12 +970,25 @@ export default function FocusPage() {
                           <Circle className="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-[var(--indigo)]/40" />
                         )}
                       </div>
-                      <span className={cn(
-                        "text-xs font-semibold transition-all text-slate-700 dark:text-foreground truncate",
-                        task.is_completed && "line-through text-muted"
-                      )}>
-                        {task.title}
-                      </span>
+                      {(() => {
+                        const { time, cleanTitle } = parseTaskTitle(task.title)
+                        return (
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className={cn(
+                              "text-xs font-semibold transition-all text-slate-700 dark:text-foreground truncate",
+                              task.is_completed && "line-through text-muted"
+                            )}>
+                              {cleanTitle}
+                            </span>
+                            {time && (
+                              <span className="text-[9px] font-bold text-[var(--indigo)] bg-[var(--indigo)]/5 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                                <Clock className="w-2.5 h-2.5" />
+                                {time}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   ))}
                 </div>

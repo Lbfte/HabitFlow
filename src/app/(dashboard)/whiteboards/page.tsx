@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Plus, Palette, Loader2, Trash2, Edit2, Flame, CheckSquare, Sparkles } from "lucide-react"
 import { CreateWhiteboardModal } from "@/components/CreateWhiteboardModal"
-import { cn } from "@/lib/utils"
+import { cn, parseTaskTitle } from "@/lib/utils"
 import Link from "next/link"
 
 interface WhiteboardRecord {
@@ -238,7 +238,7 @@ export default function WhiteboardsPage() {
                   {board.daily_tasks && (
                     <div className={cn("flex items-center gap-1 text-green bg-green/5 dark:bg-green/10 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 ring-green/10", hideTasks && "filter blur-[3px] select-none opacity-80")}>
                       <CheckSquare className="w-3.5 h-3.5" />
-                      <span>{hideTasks ? "Tarefa Oculta" : board.daily_tasks.title}</span>
+                      <span>{hideTasks ? "Tarefa Oculta" : parseTaskTitle(board.daily_tasks.title).cleanTitle}</span>
                     </div>
                   )}
                   {!board.habit_id && !board.task_id && (

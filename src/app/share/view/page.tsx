@@ -12,7 +12,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { cn } from "@/lib/utils"
+import { cn, parseTaskTitle } from "@/lib/utils"
 
 function ShareContent() {
   const searchParams = useSearchParams()
@@ -189,7 +189,19 @@ function ShareContent() {
                         <CheckCircle2 className="w-6 h-6" />
                       </div>
                       <div>
-                        <p className="font-black text-foreground text-sm uppercase tracking-tight">{task.title}</p>
+                      {(() => {
+                        const { time, cleanTitle } = parseTaskTitle(task.title || "")
+                        return (
+                          <div>
+                            <p className="font-black text-foreground text-sm uppercase tracking-tight">{cleanTitle}</p>
+                            {time && (
+                              <p className="text-[10px] text-indigo font-bold tracking-wider mt-0.5">
+                                Agendado: {time}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })()}
                         <p className="text-[10px] text-muted uppercase font-black tracking-widest mt-1">
                           {task.is_completed ? "Concluída" : "Pendente"}
                         </p>
