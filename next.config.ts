@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
+  // Permite acesso ao servidor de dev a partir de outros dispositivos na rede local
+  allowedDevOrigins: ['192.168.100.252'],
 };
 
 export default nextConfig;

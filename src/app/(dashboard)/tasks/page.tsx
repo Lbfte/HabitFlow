@@ -131,7 +131,7 @@ export default function TasksPage() {
   const saveEdit = async (id: string) => {
     if (!editingTitle.trim()) return
     const formattedTitle = formatTaskTitle(editingTitle, editingTime)
-    
+
     const { error } = await supabase
       .from('daily_tasks')
       .update({ title: formattedTitle })
@@ -158,8 +158,8 @@ export default function TasksPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Minhas Tarefas</h1>
-            <button 
-              onClick={toggleHideTasks} 
+            <button
+              onClick={toggleHideTasks}
               className="mt-1 text-muted hover:text-foreground transition-colors"
               title={hideTasks ? "Mostrar tarefas" : "Ocultar tarefas"}
             >
@@ -362,7 +362,7 @@ export default function TasksPage() {
                 <Clock className="w-5 h-5 text-indigo" />
                 Cronograma do Dia
               </h3>
-              <div 
+              <div
                 ref={timelineContainerRef}
                 className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar space-y-0 relative border-t border-border/40"
               >
@@ -378,8 +378,8 @@ export default function TasksPage() {
                   const isCurrentHour = new Date().getHours() === hour
 
                   return (
-                    <div 
-                      key={hour} 
+                    <div
+                      key={hour}
                       id={`hour-row-${hour}`}
                       className={cn(
                         "flex border-b border-border/40 min-h-[72px] group relative py-3 items-start transition-colors",
@@ -430,7 +430,7 @@ export default function TasksPage() {
                                         <Circle className="w-5 h-5 text-border hover:text-indigo/40" />
                                       )}
                                     </button>
-                                    
+
                                     {editingId === task.id ? (
                                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
                                         <Input
@@ -472,7 +472,7 @@ export default function TasksPage() {
                                       </div>
                                     )}
                                   </div>
-                                  
+
                                   {editingId !== task.id && (
                                     <div className="flex items-center gap-1">
                                       <button
@@ -507,7 +507,7 @@ export default function TasksPage() {
                 Sem Horário
               </h3>
               <p className="text-xs text-muted mb-4">Tarefas para o dia sem um horário específico.</p>
-              
+
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
                 {tasks.filter(task => !parseTaskTitle(task.title).time).length === 0 ? (
                   <div className="text-center py-8 text-xs text-muted">
@@ -564,7 +564,7 @@ export default function TasksPage() {
                               </div>
                             </div>
                           ) : (
-                            <span 
+                            <span
                               onClick={() => !task.is_completed && startEditing(task)}
                               className={cn(
                                 "text-sm font-semibold dark:font-bold truncate text-foreground flex-1 cursor-text",

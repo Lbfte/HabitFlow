@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Habit, DailyTask } from "@/types/database"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2, Palette, Clock } from "lucide-react"
+import { CheckCircle2, Circle, Flame, Plus, Calendar as CalendarIcon, Loader2, Palette, Clock, ChevronDown, ChevronUp } from "lucide-react"
 import { format, isYesterday, isToday, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import confetti from "canvas-confetti"
@@ -25,6 +25,9 @@ export default function DashboardPage() {
   const [completingId, setCompletingId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hideHabits, setHideHabits] = useState(false)
+  const [hideTasks, setHideTasks] = useState(false)
+  const [habitsCollapsed, setHabitsCollapsed] = useState(false)
+  const [focusCollapsed, setFocusCollapsed] = useState(false)
   const [linkedBoards, setLinkedBoards] = useState<Record<string, string>>({})
   const [linkedTasks, setLinkedTasks] = useState<Record<string, string>>({})
   const supabase = createClient()
@@ -33,12 +36,30 @@ export default function DashboardPage() {
     fetchData()
     const savedHideHabits = localStorage.getItem('hideHabits')
     if (savedHideHabits) setHideHabits(savedHideHabits === 'true')
+    const savedHideTasks = localStorage.getItem('hideTasks')
+    if (savedHideTasks) setHideTasks(savedHideTasks === 'true')
+    const savedHabitsCollapsed = localStorage.getItem('dashboard_habitsCollapsed')
+    if (savedHabitsCollapsed) setHabitsCollapsed(savedHabitsCollapsed === 'true')
+    const savedFocusCollapsed = localStorage.getItem('dashboard_focusCollapsed')
+    if (savedFocusCollapsed) setFocusCollapsed(savedFocusCollapsed === 'true')
   }, [])
 
   const toggleHideHabits = () => {
     const next = !hideHabits
     setHideHabits(next)
     localStorage.setItem('hideHabits', String(next))
+  }
+
+  const toggleHabitsCollapsed = () => {
+    const next = !habitsCollapsed
+    setHabitsCollapsed(next)
+    localStorage.setItem('dashboard_habitsCollapsed', String(next))
+  }
+
+  const toggleFocusCollapsed = () => {
+    const next = !focusCollapsed
+    setFocusCollapsed(next)
+    localStorage.setItem('dashboard_focusCollapsed', String(next))
   }
 
   const fetchData = async () => {
@@ -203,12 +224,22 @@ export default function DashboardPage() {
                 {hideHabits ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </CardTitle>
-            <span className="text-[10px] font-black text-indigo bg-indigo/5 dark:bg-indigo/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-indigo/10 dark:ring-0 w-fit shrink-0">
-              {habits.filter(h => h.last_completed_at && isToday(parseISO(h.last_completed_at))).length}/{habits.length} Concluídos
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-indigo bg-indigo/5 dark:bg-indigo/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-indigo/10 dark:ring-0 w-fit shrink-0">
+                {habits.filter(h => h.last_completed_at && isToday(parseISO(h.last_completed_at))).length}/{habits.length} Concluídos
+              </span>
+              <button
+                onClick={toggleHabitsCollapsed}
+                className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-muted/10 transition-all shrink-0"
+                title={habitsCollapsed ? "Expandir" : "Minimizar"}
+              >
+                {habitsCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </button>
+            </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border">
+          {!habitsCollapsed && (
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
               {habits.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
                   <Flame className="w-10 h-10 text-muted/30" />
@@ -286,19 +317,28 @@ export default function DashboardPage() {
                 )
               })}
             </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
 
         <div className="space-y-6">
           <MinimalTimerWidget />
           
           <Card className="border-none shadow-soft dark:shadow-xl dark:shadow-indigo/5 bg-surface">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <CardTitle className="text-xl font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-indigo" />
                 Foco do Dia
               </CardTitle>
+              <button
+                onClick={toggleFocusCollapsed}
+                className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-muted/10 transition-all shrink-0"
+                title={focusCollapsed ? "Expandir" : "Minimizar"}
+              >
+                {focusCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </button>
             </CardHeader>
+            {!focusCollapsed && (
             <CardContent className="space-y-4">
               {tasks.map((task) => {
                 const { time, cleanTitle } = parseTaskTitle(task.title)
@@ -322,11 +362,12 @@ export default function DashboardPage() {
                       <div className="flex flex-col min-w-0">
                         <span className={cn(
                           "text-sm font-semibold dark:font-bold transition-all text-slate-700 dark:text-foreground truncate",
-                          task.is_completed && "text-muted line-through"
+                          task.is_completed && "text-muted line-through",
+                          hideTasks && "filter blur-[4px] select-none"
                         )}>
-                          {cleanTitle}
+                          {hideTasks ? "Tarefa Oculta" : cleanTitle}
                         </span>
-                        {time && (
+                        {time && !hideTasks && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-black text-indigo mt-0.5">
                             <Clock className="w-3 h-3" />
                             {time}
@@ -374,6 +415,7 @@ export default function DashboardPage() {
                 </button>
               )}
             </CardContent>
+            )}
           </Card>
 
           <section className="accent-gradient text-white rounded-3xl p-8 relative overflow-hidden shadow-soft dark:shadow-xl dark:shadow-indigo/20">

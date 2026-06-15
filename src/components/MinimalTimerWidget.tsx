@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, Timer as TimerIcon, Clock, Settings2, SkipForward } from "lucide-react"
+import { Play, Pause, RotateCcw, Timer as TimerIcon, Clock, Settings2, SkipForward, ChevronDown, ChevronUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
@@ -20,6 +20,7 @@ export function MinimalTimerWidget() {
 
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState("25")
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Wall-clock refs: evitam drift ao usar Date.now() em vez de contar ticks
@@ -31,6 +32,9 @@ export function MinimalTimerWidget() {
   useEffect(() => {
     if (isRestoredRef.current) return
     isRestoredRef.current = true
+
+    const savedCollapsed = localStorage.getItem('widget_timerCollapsed')
+    if (savedCollapsed) setIsCollapsed(savedCollapsed === 'true')
 
     const raw = localStorage.getItem(TIMER_STORAGE_KEY)
     if (!raw) return
@@ -202,44 +206,46 @@ export function MinimalTimerWidget() {
             <Settings2 className="w-4 h-4" />
           </Button>
         </Link>
+        <button
+          onClick={() => {
+            const next = !isCollapsed
+            setIsCollapsed(next)
+            localStorage.setItem('widget_timerCollapsed', String(next))
+          }}
+          className="w-8 h-8 p-0 rounded-full hover:bg-muted/10 text-muted hover:text-foreground transition-all flex items-center justify-center"
+          title={isCollapsed ? "Expandir" : "Minimizar"}
+        >
+          {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+        </button>
       </CardHeader>
 
-      <CardContent className="space-y-6 relative z-10 flex flex-col justify-center">
-        {/* Seletor de Modo */}
-        <div className="flex bg-slate-100 dark:bg-background p-1 rounded-2xl border border-border">
-          <button
-            onClick={() => handleModeChange("pomodoro")}
-            className={cn(
-              "flex-1 text-xs font-bold py-2.5 rounded-xl transition-all",
-              mode === "pomodoro" ? "btn-indigo-active shadow-md" : "text-muted hover:text-foreground"
-            )}
-          >
-            Pomodoro
-          </button>
-          <button
-            onClick={() => handleModeChange("stopwatch")}
-            className={cn(
-              "flex-1 text-xs font-bold py-2.5 rounded-xl transition-all",
-              mode === "stopwatch" ? "btn-indigo-active shadow-md" : "text-muted hover:text-foreground"
-            )}
-          >
-            Cronômetro
-          </button>
-        </div>
+      {!isCollapsed && (
+        <CardContent className="space-y-6 relative z-10 flex flex-col justify-center">
+          {/* Seletor de Modo */}
+          <div className="flex bg-slate-100 dark:bg-background p-1 rounded-2xl border border-border">
+            <button
+              onClick={() => handleModeChange("pomodoro")}
+              className={cn(
+                "flex-1 text-xs font-bold py-2.5 rounded-xl transition-all",
+                mode === "pomodoro" ? "btn-indigo-active shadow-md" : "text-muted hover:text-foreground"
+              )}
+            >
+              Pomodoro
+            </button>
+            <button
+              onClick={() => handleModeChange("stopwatch")}
+              className={cn(
+                "flex-1 text-xs font-bold py-2.5 rounded-xl transition-all",
+                mode === "stopwatch" ? "btn-indigo-active shadow-md" : "text-muted hover:text-foreground"
+              )}
+            >
+              Cronômetro
+            </button>
+          </div>
 
-        {/* Display do Círculo */}
-        <div className="relative flex items-center justify-center w-44 h-44 mx-auto">
-          <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-            <circle
-              cx="50%"
-              cy="50%"
-              r="76"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-              className="text-slate-100 dark:text-slate-800"
-            />
-            {mode === "pomodoro" && (
+          {/* Display do Círculo */}
+          <div className="relative flex items-center justify-center w-44 h-44 mx-auto">
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
               <circle
                 cx="50%"
                 cy="50%"
@@ -247,111 +253,122 @@ export function MinimalTimerWidget() {
                 stroke="currentColor"
                 strokeWidth="4"
                 fill="transparent"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                className="text-[var(--indigo)] transition-all duration-500 ease-linear"
+                className="text-slate-100 dark:text-slate-800"
               />
-            )}
-          </svg>
-
-          {/* Informações Centrais */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 select-none">
-            {isEditing ? (
-              <div className="flex items-center justify-center gap-0.5">
-                <input
-                  type="number"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  className="w-14 text-3xl font-light bg-muted/10 border-b border-[var(--indigo)]/40 px-1 py-0 text-center focus:outline-none focus:border-[var(--indigo)] tabular-nums text-[var(--indigo)]"
-                  min="1"
-                  max="180"
-                  autoFocus
-                  onBlur={saveCustomTime}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveCustomTime()
-                    if (e.key === "Escape") setIsEditing(false)
-                  }}
+              {mode === "pomodoro" && (
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="76"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  className="text-[var(--indigo)] transition-all duration-500 ease-linear"
                 />
-                <span className="text-[9px] font-bold text-muted uppercase tracking-wider bg-muted/5 px-1 py-0.5 rounded">min</span>
-              </div>
-            ) : (
-              <div className="relative group/time flex items-center justify-center w-full px-4">
-                <span
-                  onClick={() => {
-                    if (!isActive && mode === "pomodoro") {
-                      setEditValue(String(Math.floor(timeLeft / 60)))
-                      setIsEditing(true)
-                    }
-                  }}
-                  className={cn(
-                    "text-3xl font-light tabular-nums tracking-wide transition-colors select-none",
-                    isActive ? "text-[var(--indigo)]" : "text-slate-700 dark:text-foreground",
-                    !isActive && mode === "pomodoro" && "cursor-pointer hover:text-[var(--indigo)]"
-                  )}
-                  title={!isActive && mode === "pomodoro" ? "Clique para editar" : undefined}
-                >
-                  {mode === "pomodoro" ? formatTime(timeLeft) : formatTime(stopwatchTime)}
-                </span>
-                {!isActive && mode === "pomodoro" && (
-                  <button
-                    onClick={() => {
-                      setEditValue(String(Math.floor(timeLeft / 60)))
-                      setIsEditing(true)
+              )}
+            </svg>
+
+            {/* Informações Centrais */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 select-none">
+              {isEditing ? (
+                <div className="flex items-center justify-center gap-0.5">
+                  <input
+                    type="number"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-14 text-3xl font-light bg-muted/10 border-b border-[var(--indigo)]/40 px-1 py-0 text-center focus:outline-none focus:border-[var(--indigo)] tabular-nums text-[var(--indigo)]"
+                    min="1"
+                    max="180"
+                    autoFocus
+                    onBlur={saveCustomTime}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveCustomTime()
+                      if (e.key === "Escape") setIsEditing(false)
                     }}
-                    className="absolute right-3 opacity-0 group-hover/time:opacity-100 transition-opacity p-0.5 text-muted hover:text-[var(--indigo)]"
-                    title="Editar tempo"
+                  />
+                  <span className="text-[9px] font-bold text-muted uppercase tracking-wider bg-muted/5 px-1 py-0.5 rounded">min</span>
+                </div>
+              ) : (
+                <div className="relative group/time flex items-center justify-center w-full px-4">
+                  <span
+                    onClick={() => {
+                      if (!isActive && mode === "pomodoro") {
+                        setEditValue(String(Math.floor(timeLeft / 60)))
+                        setIsEditing(true)
+                      }
+                    }}
+                    className={cn(
+                      "text-3xl font-light tabular-nums tracking-wide transition-colors select-none",
+                      isActive ? "text-[var(--indigo)]" : "text-slate-700 dark:text-foreground",
+                      !isActive && mode === "pomodoro" && "cursor-pointer hover:text-[var(--indigo)]"
+                    )}
+                    title={!isActive && mode === "pomodoro" ? "Clique para editar" : undefined}
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-            <span className="text-[8px] font-black text-muted/60 uppercase tracking-widest mt-1">
-              {mode === "pomodoro" ? "Tempo Restante" : "Tempo Decorrido"}
-            </span>
+                    {mode === "pomodoro" ? formatTime(timeLeft) : formatTime(stopwatchTime)}
+                  </span>
+                  {!isActive && mode === "pomodoro" && (
+                    <button
+                      onClick={() => {
+                        setEditValue(String(Math.floor(timeLeft / 60)))
+                        setIsEditing(true)
+                      }}
+                      className="absolute right-3 opacity-0 group-hover/time:opacity-100 transition-opacity p-0.5 text-muted hover:text-[var(--indigo)]"
+                      title="Editar tempo"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+              <span className="text-[8px] font-black text-muted/60 uppercase tracking-widest mt-1">
+                {mode === "pomodoro" ? "Tempo Restante" : "Tempo Decorrido"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Controles de Ação */}
-        <div className="flex items-center justify-center gap-5 mt-2">
-          <Button
-            variant="outline"
-            onClick={resetTimer}
-            className="h-10 w-10 p-0 rounded-full border border-border hover:bg-muted/10 transition-all hover:-rotate-90 duration-300"
-            title="Reiniciar"
-          >
-            <RotateCcw className="w-4 h-4 text-muted-foreground" />
-          </Button>
+          {/* Controles de Ação */}
+          <div className="flex items-center justify-center gap-5 mt-2">
+            <Button
+              variant="outline"
+              onClick={resetTimer}
+              className="h-10 w-10 p-0 rounded-full border border-border hover:bg-muted/10 transition-all hover:-rotate-90 duration-300"
+              title="Reiniciar"
+            >
+              <RotateCcw className="w-4 h-4 text-muted-foreground" />
+            </Button>
 
-          <button
-            onClick={toggleTimer}
-            className={cn(
-              "h-16 w-16 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 shrink-0 border-2",
-              isActive
-                ? "bg-transparent border-[var(--indigo)] text-[var(--indigo)] hover:bg-[var(--indigo)]/5"
-                : "bg-[var(--indigo)] border-transparent text-white shadow-[var(--indigo)]/20 hover:opacity-90"
-            )}
-          >
-            {isActive ? (
-              <Pause className="w-6 h-6 fill-current" />
-            ) : (
-              <Play className="w-6 h-6 fill-current ml-1" />
-            )}
-          </button>
+            <button
+              onClick={toggleTimer}
+              className={cn(
+                "h-16 w-16 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 shrink-0 border-2",
+                isActive
+                  ? "bg-transparent border-[var(--indigo)] text-[var(--indigo)] hover:bg-[var(--indigo)]/5"
+                  : "bg-[var(--indigo)] border-transparent text-white shadow-[var(--indigo)]/20 hover:opacity-90"
+              )}
+            >
+              {isActive ? (
+                <Pause className="w-6 h-6 fill-current" />
+              ) : (
+                <Play className="w-6 h-6 fill-current ml-1" />
+              )}
+            </button>
 
-          <Button
-            variant="outline"
-            onClick={skipTimer}
-            className="h-10 w-10 p-0 rounded-full border border-border hover:bg-muted/10 transition-all"
-            title="Pular"
-          >
-            <SkipForward className="w-4 h-4 text-muted-foreground" />
-          </Button>
-        </div>
-      </CardContent>
+            <Button
+              variant="outline"
+              onClick={skipTimer}
+              className="h-10 w-10 p-0 rounded-full border border-border hover:bg-muted/10 transition-all"
+              title="Pular"
+            >
+              <SkipForward className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </div>
+        </CardContent>
+      )}
     </Card>
   )
 }

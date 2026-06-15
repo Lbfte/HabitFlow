@@ -3,28 +3,28 @@
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { getReport, updateReport, deleteReport } from "@/app/actions/reports"
-import { 
-  getReportConnections, 
-  linkHabitToReport, 
-  unlinkHabitFromReport, 
-  linkTaskToReport, 
-  unlinkTaskFromReport 
+import {
+  getReportConnections,
+  linkHabitToReport,
+  unlinkHabitFromReport,
+  linkTaskToReport,
+  unlinkTaskFromReport
 } from "@/app/actions/report-links"
 import { Report, Habit, DailyTask } from "@/types/database"
 import { createClient } from "@/utils/supabase/client"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card } from "@/components/ui/Card"
-import { 
-  ArrowLeft, 
-  Save, 
-  Trash2, 
-  Globe, 
-  Lock, 
-  Eye, 
-  Edit3, 
-  Loader2, 
-  Check, 
+import {
+  ArrowLeft,
+  Save,
+  Trash2,
+  Globe,
+  Lock,
+  Eye,
+  Edit3,
+  Loader2,
+  Check,
   Copy,
   ExternalLink,
   Link as LinkIcon,
@@ -157,7 +157,7 @@ function EditorContent() {
             </Link>
             <div className="h-4 w-px bg-border" />
             <div className="flex bg-surface p-1 rounded-lg ring-1 ring-border shadow-sm">
-              <button 
+              <button
                 onClick={() => setMode('edit')}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-black uppercase tracking-widest transition-all",
@@ -166,7 +166,7 @@ function EditorContent() {
               >
                 <Edit3 className="w-3.5 h-3.5" /> Escrever
               </button>
-              <button 
+              <button
                 onClick={() => setMode('preview')}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-black uppercase tracking-widest transition-all",
@@ -179,9 +179,9 @@ function EditorContent() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button 
-              variant="secondary" 
-              size="sm" 
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setShowConnections(!showConnections)}
               className={cn(showConnections && "bg-indigo/10 text-indigo border-indigo/20")}
             >
@@ -199,20 +199,21 @@ function EditorContent() {
         </header>
 
         <div className="space-y-8">
-          <Input 
-            className="text-4xl font-black border-none bg-transparent px-0 focus-visible:ring-0 placeholder:text-muted h-auto py-2 tracking-tight text-foreground"
-            placeholder="Título do relatório..."
+          <input
+            className="w-full border-none bg-transparent px-0 focus:outline-none placeholder:text-muted py-2 text-foreground font-black uppercase tracking-widest leading-tight"
+            placeholder="TÍTULO DO RELATÓRIO..."
             value={report.title || ""}
             onChange={(e) => setReport({ ...report, title: e.target.value })}
+            style={{ fontFamily: 'inherit', fontSize: '1.875rem' }}
           />
 
           <div className="flex flex-wrap items-center gap-4">
-            <button 
+            <button
               onClick={togglePublic}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm",
-                report.is_public 
-                  ? 'bg-green/10 border-green/20 text-green' 
+                report.is_public
+                  ? 'bg-green/10 border-green/20 text-green'
                   : 'bg-muted/10 border-border text-muted hover:bg-muted/20'
               )}
             >
@@ -224,14 +225,14 @@ function EditorContent() {
               <div className="flex flex-wrap items-center gap-4 animate-in slide-in-from-left-2">
                 <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl ring-1 ring-border shadow-sm">
                   <Lock className="w-3.5 h-3.5 text-muted" />
-                    <input 
-                      placeholder="PIN opcional" 
-                      className="bg-transparent border-none focus:ring-0 text-base font-medium w-32 outline-none text-foreground font-sans" 
-                      value={report.access_code || ""}
-                      onChange={(e) => setReport({ ...report, access_code: e.target.value })}
-                    />
+                  <input
+                    placeholder="PIN opcional"
+                    className="bg-transparent border-none focus:ring-0 text-base font-medium w-32 outline-none text-foreground font-sans"
+                    value={report.access_code || ""}
+                    onChange={(e) => setReport({ ...report, access_code: e.target.value })}
+                  />
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" className="h-9 text-[10px] font-black uppercase tracking-widest text-indigo hover:bg-indigo/10" onClick={copyShareLink}>
                     {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
@@ -249,15 +250,15 @@ function EditorContent() {
 
           {mode === 'edit' ? (
             <textarea
-  className="w-full min-h-[500px] bg-transparent border-none focus:ring-0 resize-none placeholder:text-muted/50 outline-none text-foreground font-medium"
-  placeholder="Comece a escrever sua jornada... (Suporta Markdown)"
-  value={report.content || ""}
-  onChange={(e) => setReport({ ...report, content: e.target.value })}
-  style={{ fontFamily: 'var(--font-fira-code), monospace', color: 'var(--foreground) !important', opacity: 0.95, fontSize: '0.875rem' }}
-/>
+              className="w-full min-h-[500px] bg-transparent border-none focus:ring-0 resize-none placeholder:text-muted/50 outline-none text-foreground font-medium"
+              placeholder="Comece a escrever sua jornada... (Suporta Markdown)"
+              value={report.content || ""}
+              onChange={(e) => setReport({ ...report, content: e.target.value })}
+              style={{ fontFamily: 'var(--font-fira-code), monospace', color: 'var(--foreground) !important', opacity: 0.95, fontSize: '0.875rem' }}
+            />
           ) : (
             <Card className="p-8 border-none shadow-xl bg-surface min-h-[500px] ring-1 ring-border">
-              <article 
+              <article
                 className="prose prose-indigo dark:prose-invert max-w-none text-sm"
                 style={{ fontFamily: 'var(--font-fira-code), monospace', color: 'var(--foreground) !important', opacity: 0.95, fontSize: '0.875rem' }}
               >
@@ -291,8 +292,8 @@ function EditorContent() {
                       onClick={() => toggleHabitLink(habit.id)}
                       className={cn(
                         "w-full flex items-center gap-3 p-3 rounded-xl text-left text-xs font-bold transition-all",
-                        linkedHabitIds.includes(habit.id) 
-                          ? "bg-indigo/10 text-indigo ring-1 ring-indigo/20 shadow-sm" 
+                        linkedHabitIds.includes(habit.id)
+                          ? "bg-indigo/10 text-indigo ring-1 ring-indigo/20 shadow-sm"
                           : "hover:bg-muted/5 text-muted"
                       )}
                     >
@@ -317,8 +318,8 @@ function EditorContent() {
                       onClick={() => toggleTaskLink(task.id)}
                       className={cn(
                         "w-full flex items-center gap-3 p-3 rounded-xl text-left text-xs font-bold transition-all",
-                        linkedTaskIds.includes(task.id) 
-                          ? "bg-indigo/10 text-indigo ring-1 ring-indigo/20 shadow-sm" 
+                        linkedTaskIds.includes(task.id)
+                          ? "bg-indigo/10 text-indigo ring-1 ring-indigo/20 shadow-sm"
                           : "hover:bg-muted/5 text-muted"
                       )}
                     >

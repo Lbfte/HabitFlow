@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, Timer as TimerIcon, Clock, Coffee, BookOpen, SkipForward, ListTodo, Zap, Award, CheckCircle2, Circle, Volume2, VolumeX } from "lucide-react"
+import { Play, Pause, RotateCcw, Timer as TimerIcon, Clock, Coffee, BookOpen, SkipForward, ListTodo, Zap, Award, CheckCircle2, Circle, Volume2, VolumeX, ChevronDown, ChevronUp, EyeOff } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { cn, parseTaskTitle, sortTasks } from "@/lib/utils"
@@ -39,6 +39,8 @@ export default function FocusPage() {
     completedSessions: 0,
     totalMinutes: 0
   })
+  const [hideTasks, setHideTasks] = useState(false)
+  const [tasksCollapsed, setTasksCollapsed] = useState(false)
 
   const [showSpotify, setShowSpotify] = useState(false)
   const [spotifyUrl, setSpotifyUrl] = useState("")
@@ -149,6 +151,10 @@ export default function FocusPage() {
   useEffect(() => {
     fetchTasks()
     
+    // Ler preferência de ocultação de tarefas do localStorage (compartilhado com a aba Tarefas)
+    const savedHideTasks = localStorage.getItem('hideTasks')
+    if (savedHideTasks) setHideTasks(savedHideTasks === 'true')
+
     // Load local storage stats for today
     const todayStr = format(new Date(), 'yyyy-MM-dd')
     const savedStats = localStorage.getItem("habitflow_focus_stats")
@@ -449,6 +455,9 @@ export default function FocusPage() {
         setFocusStats(newStats)
         localStorage.setItem("habitflow_focus_stats", JSON.stringify(newStats))
 
+        // Tocar som ao finalizar sessão do cronômetro
+        playBeepSound()
+
         if (selectedTaskId) {
           supabase
             .from('daily_tasks')
@@ -598,7 +607,9 @@ export default function FocusPage() {
                   <option value="">Selecione uma tarefa para focar</option>
                   {tasks.filter(t => !t.is_completed).map((task) => {
                     const { cleanTitle, time } = parseTaskTitle(task.title)
-                    const displayTitle = time ? `[${time}] ${cleanTitle}` : cleanTitle
+                    const displayTitle = hideTasks
+                      ? (time ? `[${time}] Tarefa Oculta` : "Tarefa Oculta")
+                      : (time ? `[${time}] ${cleanTitle}` : cleanTitle)
                     return (
                       <option key={task.id} value={task.id}>
                         {displayTitle}
@@ -714,8 +725,10 @@ export default function FocusPage() {
                   )}
                   
                   {selectedTask ? (
-                    <span className="text-[9px] font-bold text-[var(--indigo)] dark:text-indigo-450 max-w-[140px] truncate mt-1 animate-pulse" title={parseTaskTitle(selectedTask.title).cleanTitle}>
-                      {parseTaskTitle(selectedTask.title).cleanTitle}
+                    <span className="text-[9px] font-bold text-[var(--indigo)] dark:text-indigo-450 max-w-[140px] truncate mt-1 animate-pulse" title={hideTasks ? "Tarefa Oculta" : parseTaskTitle(selectedTask.title).cleanTitle}>
+                      {hideTasks ? (
+                        <span className="flex items-center gap-0.5"><EyeOff className="w-2.5 h-2.5" /> Oculta</span>
+                      ) : parseTaskTitle(selectedTask.title).cleanTitle}
                     </span>
                   ) : (
                     <span className="text-muted/50 font-bold uppercase tracking-widest text-[8px] mt-1.5">
@@ -942,58 +955,75 @@ export default function FocusPage() {
               <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
                 <ListTodo className="w-4 h-4 text-[var(--indigo)]" />
                 Tarefas Rápidas
+                {hideTasks && (
+                  <span className="ml-1 inline-flex items-center gap-0.5 text-[8px] font-bold text-muted uppercase">
+                    <EyeOff className="w-2.5 h-2.5" /> Ocultas
+                  </span>
+                )}
               </CardTitle>
-              <span className="text-[9px] font-bold text-[var(--indigo)] bg-[var(--indigo)]/5 px-2 py-0.5 rounded-full shrink-0">
-                {tasks.filter(t => !t.is_completed).length} Pendentes
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold text-[var(--indigo)] bg-[var(--indigo)]/5 px-2 py-0.5 rounded-full shrink-0">
+                  {tasks.filter(t => !t.is_completed).length} Pendentes
+                </span>
+                <button
+                  onClick={() => setTasksCollapsed(v => !v)}
+                  className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-muted/10 transition-all"
+                  title={tasksCollapsed ? "Expandir tarefas" : "Minimizar tarefas"}
+                >
+                  {tasksCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </CardHeader>
-            <CardContent className="p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
-              {tasks.length === 0 ? (
-                <div className="text-center py-6 text-xs text-muted">
-                  Nenhuma tarefa registrada para hoje.
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  {tasks.map((task) => (
-                    <div 
-                      key={task.id}
-                      onClick={() => toggleTask(task)}
-                      className={cn(
-                        "flex items-center gap-2.5 p-2 rounded-xl hover:bg-muted/5 transition-all cursor-pointer group",
-                        task.is_completed && "opacity-40"
-                      )}
-                    >
-                      <div className="shrink-0">
-                        {task.is_completed ? (
-                          <CheckCircle2 className="w-4 h-4 text-green" />
-                        ) : (
-                          <Circle className="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-[var(--indigo)]/40" />
+            {!tasksCollapsed && (
+              <CardContent className="p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+                {tasks.length === 0 ? (
+                  <div className="text-center py-6 text-xs text-muted">
+                    Nenhuma tarefa registrada para hoje.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {tasks.map((task) => (
+                      <div 
+                        key={task.id}
+                        onClick={() => toggleTask(task)}
+                        className={cn(
+                          "flex items-center gap-2.5 p-2 rounded-xl hover:bg-muted/5 transition-all cursor-pointer group",
+                          task.is_completed && "opacity-40"
                         )}
-                      </div>
-                      {(() => {
-                        const { time, cleanTitle } = parseTaskTitle(task.title)
-                        return (
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className={cn(
-                              "text-xs font-semibold transition-all text-slate-700 dark:text-foreground truncate",
-                              task.is_completed && "line-through text-muted"
-                            )}>
-                              {cleanTitle}
-                            </span>
-                            {time && (
-                              <span className="text-[9px] font-bold text-[var(--indigo)] bg-[var(--indigo)]/5 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
-                                <Clock className="w-2.5 h-2.5" />
-                                {time}
+                      >
+                        <div className="shrink-0">
+                          {task.is_completed ? (
+                            <CheckCircle2 className="w-4 h-4 text-green" />
+                          ) : (
+                            <Circle className="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-[var(--indigo)]/40" />
+                          )}
+                        </div>
+                        {(() => {
+                          const { time, cleanTitle } = parseTaskTitle(task.title)
+                          return (
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className={cn(
+                                "text-xs font-semibold transition-all text-slate-700 dark:text-foreground truncate",
+                                task.is_completed && "line-through text-muted",
+                                hideTasks && "filter blur-[4px] select-none"
+                              )}>
+                                {hideTasks ? "Tarefa Oculta" : cleanTitle}
                               </span>
-                            )}
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
+                              {time && !hideTasks && (
+                                <span className="text-[9px] font-bold text-[var(--indigo)] bg-[var(--indigo)]/5 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  {time}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            )}
           </Card>
 
           {/* Card de Concentração */}
