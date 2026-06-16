@@ -12,11 +12,11 @@
 }
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #1A1A1B;
+  --background: #F8F9FC;       /* Off-white levemente azulado, mais sofisticado */
+  --foreground: #1E1F26;       /* Quase preto, leve tom índigo para harmonia */
   --surface: #FFFFFF;
-  --border: #F1F5F9; /* Bordas muito suaves no modo claro */
-  --muted: #475569; /* Cinza mais nítido para textos secundários no modo claro (antes: #64748B) */
+  --border: #E8ECF4;           /* Bordas mais visíveis e harmoniosas no modo claro */
+  --muted: #64748B;            /* Cinza slate equilibrado para textos secundários */
   --indigo: #4F46E5;
   --green: #10B981;
 }
@@ -77,7 +77,7 @@ body {
 }
 
 .accent-gradient {
-  background: linear-gradient(135deg, #7B61FF 0%, #634ACC 100%);
+  background: linear-gradient(135deg, var(--indigo-gradient-start, #7B61FF) 0%, var(--indigo-gradient-end, #634ACC) 100%);
 }
 
 .custom-scrollbar::-webkit-scrollbar {

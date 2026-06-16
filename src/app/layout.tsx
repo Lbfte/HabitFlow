@@ -20,7 +20,7 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "HabitFlow | Micro-hábitos, Resultados Reais",
+  title: "Synca | Micro-hábitos, Resultados Reais",
   description: "Plataforma de produtividade baseada na ciência dos mini-hábitos.",
 };
 
@@ -35,6 +35,24 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${firaCode.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const savedTheme = localStorage.getItem('hf:theme-preference');
+                  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background text-foreground selection:bg-indigo/10 selection:text-indigo">
         <ThemeProvider>
           {children}

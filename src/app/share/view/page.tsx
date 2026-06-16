@@ -119,13 +119,13 @@ function ShareContent() {
           <div className="bg-indigo p-1.5 rounded-lg shadow-lg shadow-indigo/20">
             <Flame className="w-5 h-5 text-white" />
           </div>
-          <span>HabitFlow</span>
+          <span>Synca</span>
         </Link>
         <Link href="/register">
           <Button size="sm" className="rounded-full">Começar Grátis</Button>
         </Link>
       </header>
-
+ 
       <main className="max-w-3xl mx-auto px-6 py-16 md:py-24">
         <article className="space-y-16">
           <div className="space-y-8">
@@ -138,7 +138,7 @@ function ShareContent() {
                 <div className="w-8 h-8 rounded-xl bg-indigo/10 flex items-center justify-center text-indigo">
                   <User className="w-4 h-4" />
                 </div>
-                <span>Usuário HabitFlow</span>
+                <span>Usuário Synca</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-muted/10 flex items-center justify-center text-muted">

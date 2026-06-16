@@ -1,4 +1,4 @@
-# 📂 ESTRUTURA DO PROJETO: HabitFlow
+# 📂 ESTRUTURA DO PROJETO: Synca
 
 > [!IMPORTANT]
 > **REGRA DE OURO (AI & DEVELOPER PROTOCOL):**
@@ -9,7 +9,7 @@
 ## 🗺️ Mapa de Diretórios Geral
 
 ```text
-HabitFlow/
+Synca/
 ├── .github/workflows/          # Automações do GitHub (Deploy no GH Pages)
 ├── public/                     # Arquivos estáticos acessíveis diretamente
 │   └── 404.html                # Tratamento de SPA para o GitHub Pages
@@ -22,7 +22,7 @@ HabitFlow/
 │   │   ├── share/              # Visualização de relatórios públicos compartilháveis
 │   │   ├── globals.css         # Configurações globais do TailwindCSS v4
 │   │   ├── layout.tsx          # Layout raiz do Next.js
-│   │   └── page.tsx            # Landing Page do HabitFlow
+│   │   └── page.tsx            # Landing Page do Synca
 │   ├── components/             # Componentes reutilizáveis globais da aplicação
 │   │   └── ui/                 # Componentes genéricos de UI/Design System
 │   ├── hooks/                  # Hooks customizados do React (atualmente vazio)
@@ -43,7 +43,7 @@ HabitFlow/
 * **Função:** Configuração de build e runtime do Next.js.
 * **Detalhes:** 
   * Define `output: 'export'` para compilar o app em HTML/JS estático.
-  * Define `basePath` e `assetPrefix` dinamicamente: se `process.env.NODE_ENV === 'production'`, usa `/HabitFlow` (para rodar no GitHub Pages), caso contrário fica vazio (desenvolvimento local).
+  * Define `basePath` e `assetPrefix` dinamicamente: se `process.env.NODE_ENV === 'production'`, usa `/Synca` (para rodar no GitHub Pages), caso contrário fica vazio (desenvolvimento local).
   * Desativa otimização nativa de imagens do Next.js (`images: { unoptimized: true }`) porque o GitHub Pages é uma hospedagem estática e não suporta otimização sob demanda.
   * Configura `trailingSlash: true` para garantir que rotas exportadas terminem com `/` e funcionem como diretórios estáticos.
 
@@ -151,12 +151,12 @@ Embora declaradas em diretório de "ações", no fluxo atual elas rodam no clien
 
 ### 🌍 Rota Raiz & Páginas Globais
 * **`layout.tsx`**: Carrega as fontes "Geist Sans" e "Geist Mono", injeta o `ThemeProvider` no HTML e define os metadados globais da plataforma.
-* **`page.tsx`**: A Landing Page institucional do HabitFlow, com design premium, grid de funcionalidades e botões de chamada para ação (CTA).
+* **`page.tsx`**: A Landing Page institucional do Synca, com design premium, grid de funcionalidades e botões de chamada para ação (CTA).
 * **`globals.css`**: Contém a injeção do Tailwind CSS v4, variáveis HSL do design system (paletas indigo, green, orange, background, surfaces de modo claro e escuro) e estilização de barra de rolagem.
 
 ### 🔐 Grupo de Rotas `(auth)` (Sem prefixo na URL)
 * **`login/page.tsx`**: Formulário de login de usuários.
-* **`register/page.tsx`**: Criação de novas contas. Envia confirmação de cadastro via email redirecionando de volta ao app usando um helper de detecção de domínio para não quebrar no GitHub Pages (`/HabitFlow`).
+* **`register/page.tsx`**: Criação de novas contas. Envia confirmação de cadastro via email redirecionando de volta ao app usando um helper de detecção de domínio para não quebrar no GitHub Pages (`/Synca`).
 * **`forgot-password/page.tsx`**: Formulário para iniciar fluxo de redefinição de senha, disparando o e-mail de recuperação do Supabase.
 * **`reset-password/page.tsx`**: Formulário de entrada da nova senha do usuário após validar o token recebido no email de recuperação.
 
@@ -177,7 +177,7 @@ Embora declaradas em diretório de "ações", no fluxo atual elas rodam no clien
 
 ## 💾 Modelagem de Dados & Tabelas do Banco (Supabase)
 
-Para o bom funcionamento do HabitFlow, estas são as tabelas essenciais configuradas no Supabase:
+Para o bom funcionamento do Synca, estas são as tabelas essenciais configuradas no Supabase:
 
 1. **`habits`**: Armazena hábitos do usuário (`id`, `user_id`, `name`, `goal_description`, `streak_count`, `last_completed_at`, `frequency_interval`).
 2. **`daily_tasks`**: Armazena checklists diários (`id`, `user_id`, `title`, `is_completed`, `due_date`, `priority`).

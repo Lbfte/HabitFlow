@@ -9,7 +9,7 @@ import Link from "next/link"
 
 type Mode = "pomodoro" | "stopwatch"
 
-export const TIMER_STORAGE_KEY = "habitflow_active_timer"
+export const TIMER_STORAGE_KEY = "synca_active_timer"
 
 export function MinimalTimerWidget() {
   const [mode, setMode] = useState<Mode>("pomodoro")

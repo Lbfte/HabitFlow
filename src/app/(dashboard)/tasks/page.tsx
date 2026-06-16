@@ -153,7 +153,7 @@ export default function TasksPage() {
   )
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
+    <div className="w-full space-y-8 animate-in fade-in duration-700 pb-28 sm:pb-8">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-10 sm:pt-0">
         <div>
           <div className="flex items-center gap-2">

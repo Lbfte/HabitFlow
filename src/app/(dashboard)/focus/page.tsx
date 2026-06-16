@@ -12,7 +12,7 @@ import { format } from "date-fns"
 type Mode = "pomodoro" | "stopwatch"
 type PomodoroState = "focus" | "shortBreak" | "longBreak"
 
-const TIMER_STORAGE_KEY = "habitflow_active_timer"
+const TIMER_STORAGE_KEY = "synca_active_timer"
 
 export default function FocusPage() {
   const [mode, setMode] = useState<Mode>("pomodoro")
@@ -157,7 +157,7 @@ export default function FocusPage() {
 
     // Load local storage stats for today
     const todayStr = format(new Date(), 'yyyy-MM-dd')
-    const savedStats = localStorage.getItem("habitflow_focus_stats")
+    const savedStats = localStorage.getItem("synca_focus_stats")
     if (savedStats) {
       const parsed = JSON.parse(savedStats)
       if (parsed.date === todayStr) {
@@ -169,12 +169,12 @@ export default function FocusPage() {
         // Novo dia, inicializa
         const newStats = { date: todayStr, completedSessions: 0, totalMinutes: 0 }
         setFocusStats(newStats)
-        localStorage.setItem("habitflow_focus_stats", JSON.stringify(newStats))
+        localStorage.setItem("synca_focus_stats", JSON.stringify(newStats))
       }
     } else {
       const newStats = { date: todayStr, completedSessions: 0, totalMinutes: 0 }
       setFocusStats(newStats)
-      localStorage.setItem("habitflow_focus_stats", JSON.stringify(newStats))
+      localStorage.setItem("synca_focus_stats", JSON.stringify(newStats))
     }
 
     return () => {
@@ -367,7 +367,7 @@ export default function FocusPage() {
       totalMinutes: focusStats.totalMinutes + minutesFocused
     }
     setFocusStats(newStats)
-    localStorage.setItem("habitflow_focus_stats", JSON.stringify(newStats))
+    localStorage.setItem("synca_focus_stats", JSON.stringify(newStats))
 
     // Marcar tarefa selecionada como concluída automaticamente
     if (pomodoroState === "focus" && selectedTaskId) {
@@ -453,7 +453,7 @@ export default function FocusPage() {
           totalMinutes: focusStats.totalMinutes + mins
         }
         setFocusStats(newStats)
-        localStorage.setItem("habitflow_focus_stats", JSON.stringify(newStats))
+        localStorage.setItem("synca_focus_stats", JSON.stringify(newStats))
 
         // Tocar som ao finalizar sessão do cronômetro
         playBeepSound()
