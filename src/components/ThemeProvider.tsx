@@ -41,7 +41,7 @@ export const accentColors: AccentColor[] = [
   },
   {
     name: "rose",
-    label: "Rosa",
+    label: "Vermelho",
     light: "#E11D48",
     dark: "#F43F5E",
     gradientStart: "#F43F5E",
@@ -92,13 +92,23 @@ function setStored(userId: string | null, key: string, value: string) {
 const ThemeContext = createContext<{
   theme: Theme
   accent: string
+  customAccentColor: string
   toggleTheme: () => void
   changeAccent: (accentName: string) => void
-}>({ theme: "dark", accent: "indigo", toggleTheme: () => {}, changeAccent: () => {} })
+  setCustomAccent: (colorHex: string) => void
+}>({ 
+  theme: "dark", 
+  accent: "indigo", 
+  customAccentColor: "#6366F1", 
+  toggleTheme: () => {}, 
+  changeAccent: () => {},
+  setCustomAccent: () => {}
+})
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark")
   const [accent, setAccent] = useState<string>("indigo")
+  const [customAccentColor, setCustomAccentColor] = useState<string>("#6366F1")
   const [userId, setUserId] = useState<string | null>(null)
   const prevUserIdRef = useRef<string | null>(null)
 
@@ -117,14 +127,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const applyAccent = useCallback((accentName: string, currentTheme: Theme) => {
-    const colorObj = accentColors.find(a => a.name === accentName) || accentColors[0]
+  const applyAccent = useCallback((accentName: string, currentTheme: Theme, customColor?: string) => {
     const root = document.documentElement
+    if (accentName === "custom") {
+      const activeCustom = customColor || getStored(userId, "custom-accent-color") || "#6366F1"
+      root.style.setProperty("--indigo", activeCustom)
+      root.style.setProperty("--indigo-gradient-start", activeCustom)
+      root.style.setProperty("--indigo-gradient-end", activeCustom)
+      return
+    }
+
+    const colorObj = accentColors.find(a => a.name === accentName) || accentColors[0]
     const colorValue = currentTheme === "dark" ? colorObj.dark : colorObj.light
     root.style.setProperty("--indigo", colorValue)
     root.style.setProperty("--indigo-gradient-start", colorObj.gradientStart)
     root.style.setProperty("--indigo-gradient-end", colorObj.gradientEnd)
-  }, [])
+  }, [userId])
 
   // Carrega preferências assim que o userId estiver disponível
   useEffect(() => {
@@ -135,12 +153,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const prevUid = prevUserIdRef.current
       const prevTheme = (getStored(prevUid, "theme") as Theme | null) || "dark"
       const prevAccent = getStored(prevUid, "accent") || "indigo"
+      const prevCustomColor = getStored(prevUid, "custom-accent-color") || "#6366F1"
       
       setStored(null, "theme", prevTheme)
       setStored(null, "accent", prevAccent)
+      setStored(null, "custom-accent-color", prevCustomColor)
       setTheme(prevTheme)
       setAccent(prevAccent)
-      applyAccent(prevAccent, prevTheme)
+      setCustomAccentColor(prevCustomColor)
+      applyAccent(prevAccent, prevTheme, prevCustomColor)
       
       // Garante que a classe de tema escuro seja mantida no HTML para evitar o flash claro no logout
       document.documentElement.classList.toggle("dark", prevTheme === "dark")
@@ -153,6 +174,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const savedTheme = getStored(userId, "theme") as Theme | null
     const savedAccent = getStored(userId, "accent") || "indigo"
+    const savedCustomAccent = getStored(userId, "custom-accent-color") || "#6366F1"
 
     let activeTheme: Theme = "dark"
     if (savedTheme) {
@@ -165,8 +187,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setStored(userId, "theme", "dark")
     }
 
+    setCustomAccentColor(savedCustomAccent)
     setAccent(savedAccent)
-    applyAccent(savedAccent, activeTheme)
+    applyAccent(savedAccent, activeTheme, savedCustomAccent)
   }, [userId, applyAccent])
 
   const toggleTheme = () => {
@@ -174,17 +197,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(newTheme)
     setStored(userId, "theme", newTheme)
     document.documentElement.classList.toggle("dark", newTheme === "dark")
-    applyAccent(accent, newTheme)
+    applyAccent(accent, newTheme, customAccentColor)
   }
 
   const changeAccent = (newAccent: string) => {
     setAccent(newAccent)
     setStored(userId, "accent", newAccent)
-    applyAccent(newAccent, theme)
+    applyAccent(newAccent, theme, customAccentColor)
+  }
+
+  const setCustomAccent = (colorHex: string) => {
+    setCustomAccentColor(colorHex)
+    setStored(userId, "custom-accent-color", colorHex)
+    setAccent("custom")
+    setStored(userId, "accent", "custom")
+    applyAccent("custom", theme, colorHex)
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, accent, toggleTheme, changeAccent }}>
+    <ThemeContext.Provider value={{ theme, accent, customAccentColor, toggleTheme, changeAccent, setCustomAccent }}>
       {children}
     </ThemeContext.Provider>
   )

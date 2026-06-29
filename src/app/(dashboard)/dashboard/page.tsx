@@ -54,7 +54,7 @@ function setStoredPref(userId: string | null, key: string, value: string) {
 }
 
 export default function DashboardPage() {
-  const { theme, accent, toggleTheme, changeAccent } = useTheme()
+  const { theme, accent, customAccentColor, toggleTheme, changeAccent, setCustomAccent } = useTheme()
   const [habits, setHabits] = useState<Habit[]>([])
   const [tasks, setTasks] = useState<DailyTask[]>([])
   const [loading, setLoading] = useState(true)
@@ -692,6 +692,33 @@ export default function DashboardPage() {
                         </button>
                       )
                     })}
+                    
+                    {/* Botão Personalizado */}
+                    <div className={cn(
+                      "flex items-center justify-between p-3 rounded-2xl border transition-all col-span-3",
+                      accent === "custom"
+                        ? "border-indigo bg-indigo/5 font-bold text-foreground"
+                        : "border-border hover:bg-muted/5 text-muted"
+                    )}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <label className="relative cursor-pointer shrink-0 block w-5 h-5 rounded-full overflow-hidden border border-border/80 shadow-inner">
+                          <input
+                            type="color"
+                            value={customAccentColor}
+                            onChange={(e) => setCustomAccent(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <div 
+                            className="w-full h-full rounded-full" 
+                            style={{ backgroundColor: customAccentColor }}
+                          />
+                        </label>
+                        <span className="text-xs truncate font-semibold">Personalizada</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-muted bg-muted/20 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                        {customAccentColor.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
