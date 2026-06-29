@@ -23,12 +23,13 @@ export default function RegisterPage() {
     setLoading(true)
     setError(null)
 
+    const pathParts = window.location.pathname.split('/')
+    const basePath = window.location.hostname.includes('github.io') && pathParts[1] ? `/${pathParts[1]}` : ''
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        // Include the basePath (/Synca) for GitHub Pages deployment
-        emailRedirectTo: `${window.location.origin}${window.location.hostname.includes('github.io') ? '/Synca' : ''}/login`,
+        emailRedirectTo: `${window.location.origin}${basePath}/login`,
       },
     })
 

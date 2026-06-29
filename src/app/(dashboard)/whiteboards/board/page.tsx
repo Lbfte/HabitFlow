@@ -45,7 +45,8 @@ function BoardContent() {
           return
         }
 
-        setBoardName((data as any).name || "Quadro de Estudos")
+        const contentObj = (data as any).content && typeof (data as any).content === "object" ? (data as any).content : {}
+        setBoardName((data as any).name || contentObj.name || "Quadro de Estudos")
       } catch (err) {
         console.error(err)
       } finally {

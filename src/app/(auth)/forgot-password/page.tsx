@@ -20,8 +20,8 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError(null)
 
-    // Include the basePath (/Synca) for GitHub Pages deployment
-    const basePath = window.location.hostname.includes('github.io') ? '/Synca' : ''
+    const pathParts = window.location.pathname.split('/')
+    const basePath = window.location.hostname.includes('github.io') && pathParts[1] ? `/${pathParts[1]}` : ''
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}${basePath}/reset-password`,
     })

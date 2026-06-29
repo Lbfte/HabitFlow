@@ -6,23 +6,43 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function parseTaskTitle(title: string) {
-  if (!title) return { time: null, cleanTitle: "" }
-  const match = title.match(/^\[(\d{2}:\d{2})\]\s*(.*)$/)
-  if (match) {
-    return {
-      time: match[1],
-      cleanTitle: match[2].trim()
-    }
+  if (!title) return { time: null, category: null, cleanTitle: "" }
+  
+  let time: string | null = null
+  let category: string | null = null
+  let remaining = title.trim()
+
+  // 1. Tenta extrair o horário no início: [HH:MM]
+  const timeMatch = remaining.match(/^\[(\d{2}:\d{2})\]\s*(.*)$/)
+  if (timeMatch) {
+    time = timeMatch[1]
+    remaining = timeMatch[2].trim()
   }
+
+  // 2. Tenta extrair a categoria: [cat:Nome]
+  const catMatch = remaining.match(/^\[cat:([^\]]+)\]\s*(.*)$/)
+  if (catMatch) {
+    category = catMatch[1]
+    remaining = catMatch[2].trim()
+  }
+
   return {
-    time: null,
-    cleanTitle: title.trim()
+    time,
+    category,
+    cleanTitle: remaining
   }
 }
 
-export function formatTaskTitle(title: string, time: string | null) {
-  if (!time || !time.trim()) return title.trim()
-  return `[${time}] ${title.trim()}`
+export function formatTaskTitle(title: string, time: string | null, category: string | null = null) {
+  let result = ""
+  if (time && time.trim()) {
+    result += `[${time.trim()}] `
+  }
+  if (category && category.trim()) {
+    result += `[cat:${category.trim()}] `
+  }
+  result += title.trim()
+  return result.trim()
 }
 
 export function sortTasks<T extends { title: string; is_completed: boolean; created_at?: string }>(tasks: T[]): T[] {

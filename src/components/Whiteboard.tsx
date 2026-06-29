@@ -252,22 +252,53 @@ export default function Whiteboard({ boardId, boardName }: WhiteboardProps) {
         excalidrawAPI.addFiles(Object.values(processedFiles))
       }
 
+      // Buscar o registro atual para preservar metadados adicionais (como name e task_id caso estejam no JSON)
+      const { data: currentBoardData } = await supabase
+        .from("habit_boards")
+        .select("content, name, task_id")
+        .eq("id", boardId)
+        .single()
+
+      const currentContent = currentBoardData?.content && typeof currentBoardData.content === "object" ? currentBoardData.content : {}
+      const finalName = currentBoardData?.name || (currentContent as any)?.name || boardName
+      const finalTaskId = currentBoardData?.task_id || (currentContent as any)?.task_id || null
+
+      const updatedContent = {
+        ...currentContent,
+        elements,
+        appState: {
+          theme: appState.theme,
+          viewBackgroundColor: appState.viewBackgroundColor,
+          gridSize: appState.gridSize,
+        },
+        files: processedFiles,
+        name: finalName,
+        task_id: finalTaskId
+      }
+
       // Salva a cena completa com as URLs da nuvem
-      const { error } = await supabase
+      let { error } = await supabase
         .from("habit_boards")
         .update({
-          content: {
-            elements,
-            appState: {
-              theme: appState.theme,
-              viewBackgroundColor: appState.viewBackgroundColor,
-              gridSize: appState.gridSize,
-            },
-            files: processedFiles,
-          },
+          name: finalName,
+          content: updatedContent,
           updated_at: new Date().toISOString(),
         })
         .eq("id", boardId)
+
+      // Fallback: se 'name' falhar por falta de coluna no cache da API
+      if (error && (error.code === "PGRST204" || String(error.message).includes("name"))) {
+        console.warn("Coluna 'name' ausente detectada ao atualizar quadro, salvando apenas no JSON...")
+        const { error: fallbackErr } = await supabase
+          .from("habit_boards")
+          .update({
+            content: updatedContent,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", boardId)
+        
+        error = fallbackErr
+      }
 
       if (error) {
         if (error.code === "PGRST205") {

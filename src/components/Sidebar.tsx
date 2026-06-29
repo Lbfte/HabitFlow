@@ -48,7 +48,8 @@ export function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps) {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut()
-      const basePath = window.location.hostname.includes('github.io') ? '/Synca' : ''
+      const pathParts = window.location.pathname.split('/')
+      const basePath = window.location.hostname.includes('github.io') && pathParts[1] ? `/${pathParts[1]}` : ''
       window.location.href = `${basePath}/login/`
     } catch (error) {
       console.error("Erro ao sair:", error)

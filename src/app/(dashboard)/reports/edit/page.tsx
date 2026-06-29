@@ -129,7 +129,9 @@ function EditorContent() {
   }
 
   const copyShareLink = () => {
-    const url = `${window.location.origin}/Synca/share/view/?id=${id}`
+    const pathParts = window.location.pathname.split('/')
+    const basePath = window.location.hostname.includes('github.io') && pathParts[1] ? `/${pathParts[1]}` : ''
+    const url = `${window.location.origin}${basePath}/share/view/?id=${id}`
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)

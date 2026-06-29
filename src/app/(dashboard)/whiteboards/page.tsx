@@ -67,14 +67,18 @@ export default function WhiteboardsPage() {
 
       // 4. Juntar as informações em memória para evitar erros de cache de relacionamentos no Supabase
       const mapped = boardsData.map((board: any) => {
+        const contentObj = board.content && typeof board.content === "object" ? board.content : {}
+        const name = board.name || contentObj.name || "Quadro de Estudos"
+        const taskId = board.task_id || contentObj.task_id || null
+        
         const habit = habitsData?.find(h => h.id === board.habit_id) || null
-        const task = tasksData?.find(t => t.id === board.task_id) || null
+        const task = tasksData?.find(t => t.id === taskId) || null
         
         return {
           id: board.id,
-          name: board.name || "Quadro de Estudos",
+          name: name,
           habit_id: board.habit_id,
-          task_id: board.task_id,
+          task_id: taskId,
           updated_at: board.updated_at,
           habits: habit ? { name: habit.name } : null,
           daily_tasks: task ? { title: task.title } : null
@@ -95,6 +99,20 @@ export default function WhiteboardsPage() {
       if (!user) return
 
       if (editingBoard) {
+        // Obter o content atual para preservar o desenho
+        const { data: currentBoard } = await supabase
+          .from("habit_boards")
+          .select("content")
+          .eq("id", editingBoard.id)
+          .single()
+        
+        const currentContent = currentBoard?.content && typeof currentBoard.content === "object" ? currentBoard.content : {}
+        const updatedContent = {
+          ...currentContent,
+          name,
+          task_id: taskId
+        }
+
         // Modo Edição / Atualização
         let { error } = await supabase
           .from("habit_boards")
@@ -102,6 +120,7 @@ export default function WhiteboardsPage() {
             name,
             habit_id: habitId,
             task_id: taskId,
+            content: updatedContent,
             updated_at: new Date().toISOString()
           })
           .eq("id", editingBoard.id)
@@ -113,6 +132,7 @@ export default function WhiteboardsPage() {
             .from("habit_boards")
             .update({
               habit_id: habitId,
+              content: updatedContent,
               updated_at: new Date().toISOString()
             })
             .eq("id", editingBoard.id)
@@ -122,6 +142,14 @@ export default function WhiteboardsPage() {
           throw error
         }
       } else {
+        const initialContent = {
+          name,
+          task_id: taskId,
+          elements: [],
+          appState: { theme: "light" },
+          files: {}
+        }
+
         // Modo Criação
         let { error } = await supabase
           .from("habit_boards")
@@ -130,7 +158,7 @@ export default function WhiteboardsPage() {
             habit_id: habitId,
             task_id: taskId,
             user_id: user.id,
-            content: { elements: [], appState: { theme: "light" }, files: {} },
+            content: initialContent,
             updated_at: new Date().toISOString()
           })
 
@@ -142,7 +170,7 @@ export default function WhiteboardsPage() {
             .insert({
               habit_id: habitId,
               user_id: user.id,
-              content: { elements: [], appState: { theme: "light" }, files: {} },
+              content: initialContent,
               updated_at: new Date().toISOString()
             })
           

@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
   // Se o seu repositório for "Synca", mantenha assim. 
   // Se for "synca" (tudo minúsculo), mude aqui embaixo.
   // Só aplicamos o prefixo em ambiente de produção (GitHub Pages) para evitar erro 404 no desenvolvimento local!
-  basePath: isProd ? '/Synca' : '', 
-  assetPrefix: isProd ? '/Synca' : '',
+  basePath: isProd ? '/HabitFlow' : '', 
+  assetPrefix: isProd ? '/HabitFlow' : '',
   images: {
     unoptimized: true,
   },
